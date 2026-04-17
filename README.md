@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CCE Practice App
 
-## Getting Started
+A voice-based RACGP Clinical Competency Exam (CCE) practice tool. An AI acts as your examiner, asks you the real CCE case discussion questions, listens to your answers via microphone, and then gives you a completed marking rubric plus mentor feedback at the end.
 
-First, run the development server:
+## Cases included
+
+| Case | Patient | Presenting Complaint | Topics |
+|------|---------|---------------------|--------|
+| HUNT | Angela, 59F | Racing heart, sweating, neck swelling | Thyrotoxicosis / Thyroid Storm |
+| JONES | Susan, 68F | Tender growing lump on left leg | Squamous Cell Carcinoma, Preventive Health |
+| KEATING | Ava, 3F | Vulval discomfort, bedwetting, weight loss | Type 1 Diabetes / DKA, Rural Medicine |
+| MORRAL | Evan, 76M | Weakness, pre-syncope on the farm | Bradycardia, Aortic Stenosis, Falls Risk |
+| SIMKINS | Amiel, 21F | Postpartum behavioural change | Postpartum Psychosis, Aboriginal Health |
+
+## Prerequisites
+
+- [Node.js 18+](https://nodejs.org/) — check with `node --version`
+- An [Anthropic API key](https://console.anthropic.com/) (Claude)
+- **Chrome or Edge** browser (for Web Speech API voice support)
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+cd cce-practice-app
+npm install
+```
+
+### 2. Add your Anthropic API key
+
+Edit `.env.local` in the `cce-practice-app` folder:
+
+```
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+
+Get your key at https://console.anthropic.com/
+
+### 3. Start the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in **Chrome** or **Edge**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Allow microphone access
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+When you start an exam, the browser will ask for microphone permission. Click **Allow**.
 
-## Learn More
+## How to use
 
-To learn more about Next.js, take a look at the following resources:
+1. **Pick a case** from the home screen
+2. **Read the scenario** carefully — this is exactly what you'd get in the real exam (candidate information only, no hints)
+3. Click **Start Exam** when ready
+4. **Speak your answers** — press the 🎤 button, speak, then press it again to stop
+5. The AI examiner will respond (spoken aloud + displayed as text) and may use prompts/probes
+6. Use **Next Q →** to move to the next question if you're ready
+7. Use **End exam** when you've finished all questions (or the 15-minute timer will end it automatically)
+8. Wait ~10–20 seconds for the AI to complete the marking
+9. Review your **marking rubric**, **mentor feedback**, and **transcript** on the results page
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tips
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Use a quiet room with a decent microphone for best voice recognition
+- If voice recognition isn't working, click "Type instead" to switch to text input
+- You can change the examiner voice using the dropdown in the top bar
+- The **debrief notes** and **competent candidate criteria** are fully loaded into the AI — the feedback you get is based on the real RACGP marking criteria
+- You can retry the same case as many times as you like; completed attempts are tracked
 
-## Deploy on Vercel
+## Cost
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Each exam session uses approximately:
+- ~2,000–4,000 tokens for the examiner conversation (streaming)
+- ~6,000–10,000 tokens for the post-exam evaluation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+At Claude Sonnet pricing (~$3/$15 per million tokens in/out), one full practice session costs approximately **$0.05–$0.15 AUD** — very cheap for exam prep.
+
+## Tech stack
+
+- **Next.js 14** (App Router) with TypeScript
+- **Tailwind CSS** for styling
+- **Anthropic Claude Sonnet** for the AI examiner and evaluator
+- **Web Speech API** (browser-native, free) for speech-to-text
+- **SpeechSynthesis API** (browser-native, free) for text-to-speech
+- No database — all state in memory / localStorage / sessionStorage
