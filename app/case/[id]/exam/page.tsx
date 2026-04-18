@@ -1,6 +1,41 @@
 "use client";
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
+
+// ---------------------------------------------------------------------------
+// Sentence-level TTS helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Greedily extract all complete sentences from the buffer.
+ * A sentence boundary is: [.!?] followed by whitespace + an uppercase letter
+ * or quote. Returns the text to speak now and whatever remains in the buffer.
+ */
+function extractCompleteSentences(buffer: string): {
+  toSpeak: string;
+  remaining: string;
+} {
+  const match = /^([\s\S]+[.!?])(?=\s+[A-Z"'])/.exec(buffer);
+  if (!match) return { toSpeak: "", remaining: buffer };
+  return {
+    toSpeak: match[1].trim(),
+    remaining: buffer.slice(match[1].length).trimStart(),
+  };
+}
+
+/**
+ * Strip examiner prompt labels and markdown formatting that Claude can leak,
+ * and normalise whitespace. Applied to each sentence before TTS and to the
+ * full text before it is stored in the message history.
+ */
+function cleanExaminerText(text: string): string {
+  return text
+    .replace(/\*{1,3}\[(PROMPT|PROBE|MUST-USE)\]\*{1,3}/gi, "")
+    .replace(/\[(PROMPT|PROBE|MUST-USE)\]/gi, "")
+    .replace(/\*{2,3}([^*]+)\*{2,3}/g, "$1")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
 import { useRouter } from "next/navigation";
 import { getCaseById } from "@/data/cases";
 import { notFound } from "next/navigation";
@@ -44,6 +79,8 @@ export default function ExamPage({
   const [hasShownWarning, setHasShownWarning] = useState(false);
 
   const [isExaminerTyping, setIsExaminerTyping] = useState(false);
+  /** Live text from the examiner stream; null when not streaming */
+  const [streamingText, setStreamingText] = useState<string | null>(null);
   const [interimText, setInterimText] = useState("");
   const [manualInput, setManualInput] = useState("");
   const [useManualMode, setUseManualMode] = useState(false);
@@ -67,7 +104,7 @@ export default function ExamPage({
   const hasPlayedWarningRef = useRef(false);
   const isTimeUpRef = useRef(false);
 
-  const { speak, stop: stopSpeaking, isSpeaking } = useOpenAITTS({
+  const { speak, enqueue, stop: stopSpeaking, isSpeaking } = useOpenAITTS({
     onFallbackActive: () => setIsTTSFallback(true),
   });
 
@@ -106,7 +143,7 @@ export default function ExamPage({
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, interimText, isExaminerTyping]);
+  }, [messages, interimText, isExaminerTyping, streamingText]);
 
   // Check for recoverable session on mount
   useEffect(() => {
@@ -236,6 +273,7 @@ export default function ExamPage({
   const streamExaminerResponse = useCallback(
     async (currentMessages: Message[], qIndex: number) => {
       setIsExaminerTyping(true);
+      setStreamingText(null);
       setError(null);
 
       try {
@@ -256,15 +294,16 @@ export default function ExamPage({
         const reader = res.body!.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
+        let sentenceBuffer = "";
+        let firstToken = true;
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n");
 
-          for (const line of lines) {
+          for (const line of chunk.split("\n")) {
             if (line.startsWith("data: ")) {
               const data = line.slice(6).trim();
               if (data === "[DONE]") continue;
@@ -272,6 +311,27 @@ export default function ExamPage({
                 const parsed = JSON.parse(data);
                 if (parsed.text) {
                   fullText += parsed.text;
+                  sentenceBuffer += parsed.text;
+
+                  // Switch from dots → live text on first token
+                  if (firstToken) {
+                    firstToken = false;
+                    setIsExaminerTyping(false);
+                  }
+                  setStreamingText(fullText);
+
+                  // Kick off TTS for each completed sentence rather than
+                  // waiting for the full response — cuts first-audio latency
+                  // from ~8-12 s down to ~1-3 s.
+                  if (!isTimeUpRef.current) {
+                    const { toSpeak, remaining } =
+                      extractCompleteSentences(sentenceBuffer);
+                    if (toSpeak) {
+                      const cleaned = cleanExaminerText(toSpeak);
+                      if (cleaned) enqueue(cleaned, "examiner");
+                      sentenceBuffer = remaining;
+                    }
+                  }
                 }
               } catch {
                 // ignore parse errors
@@ -280,18 +340,19 @@ export default function ExamPage({
           }
         }
 
+        // Flush any sentence fragment that didn't end with a boundary
+        if (sentenceBuffer.trim() && !isTimeUpRef.current) {
+          const cleaned = cleanExaminerText(sentenceBuffer);
+          if (cleaned) enqueue(cleaned, "examiner");
+        }
+
         setIsExaminerTyping(false);
+        setStreamingText(null);
 
-        // Strip any leaked [PROMPT]/[PROBE]/[MUST-USE] labels and markdown
-        // formatting that Claude may accidentally include in its response.
-        fullText = fullText
-          .replace(/\*{1,3}\[(PROMPT|PROBE|MUST-USE)\]\*{1,3}/gi, "")
-          .replace(/\[(PROMPT|PROBE|MUST-USE)\]/gi, "")
-          .replace(/\*{2,3}([^*]+)\*{2,3}/g, "$1")
-          .replace(/\s{2,}/g, " ")
-          .trim();
+        // Clean the full text for the transcript record
+        fullText = cleanExaminerText(fullText);
 
-        if (fullText.trim()) {
+        if (fullText) {
           // Detect if the examiner has transitioned to a new question.
           // The system prompt instructs: "Moving to Question [N]..."
           const transitionMatch = fullText.match(
@@ -310,13 +371,10 @@ export default function ExamPage({
             }
           }
 
-          addExaminerMessage(fullText.trim(), resolvedQIndex);
-          // Only speak if not time-up (avoid TTS competing with closing sequence)
-          if (!isTimeUpRef.current) {
-            speak(fullText.trim(), "examiner");
-          }
+          addExaminerMessage(fullText, resolvedQIndex);
+          // TTS already started sentence-by-sentence via enqueue() above.
+          // speak() is intentionally not called here.
 
-          // Check if examiner concluded the exam
           if (
             fullText.toLowerCase().includes("concludes the case") ||
             fullText.toLowerCase().includes("that concludes")
@@ -326,12 +384,13 @@ export default function ExamPage({
         }
       } catch (err) {
         setIsExaminerTyping(false);
+        setStreamingText(null);
         setError("Failed to get examiner response. Please try again.");
         console.error(err);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id, speak]
+    [id, enqueue]
   );
 
   const startExam = async () => {
@@ -485,7 +544,7 @@ export default function ExamPage({
     elapsedSeconds < TOTAL_EXAM_SECONDS;
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900">
+    <div className="flex flex-col h-screen bg-slate-900 overflow-hidden">
 
       {/* Session recovery prompt */}
       {showRecoveryPrompt && (
@@ -598,7 +657,7 @@ export default function ExamPage({
       )}
 
       {/* Messages transcript */}
-      <div className="flex-1 overflow-y-scroll">
+      <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
           {!isExamStarted && !showRecoveryPrompt && (
             <div className="text-center py-16">
@@ -662,8 +721,8 @@ export default function ExamPage({
             </div>
           )}
 
-          {/* Examiner typing indicator */}
-          {isExaminerTyping && (
+          {/* Examiner typing dots — shown while waiting for first token */}
+          {isExaminerTyping && streamingText === null && (
             <div className="flex gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm bg-blue-600 text-white">
                 E
@@ -674,6 +733,19 @@ export default function ExamPage({
                   <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                   <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Live streaming text — replaces dots as tokens arrive */}
+          {streamingText !== null && (
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm bg-blue-600 text-white">
+                E
+              </div>
+              <div className="max-w-[78%] rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed bg-slate-700 text-slate-100">
+                {streamingText}
+                <span className="inline-block ml-1 animate-pulse opacity-60">▊</span>
               </div>
             </div>
           )}

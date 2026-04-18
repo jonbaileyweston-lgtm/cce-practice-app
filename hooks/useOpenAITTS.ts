@@ -11,33 +11,151 @@ interface UseOpenAITTSOptions {
 
 interface UseOpenAITTSReturn {
   isSpeaking: boolean;
-  speak: (text: string, speakerRole: SpeakerRole, onEnd?: () => void) => void;
+  /** Stop everything, clear queue, cancel in-flight requests */
   stop: () => void;
+  /** Interrupt current speech, clear queue, then play this text immediately */
+  speak: (text: string, speakerRole: SpeakerRole, onEnd?: () => void) => void;
+  /**
+   * Add text to the playback queue. If nothing is playing, starts immediately.
+   * Call this per-sentence during streaming so audio begins before the full
+   * response has arrived.
+   */
+  enqueue: (text: string, speakerRole: SpeakerRole) => void;
 }
 
 export function useOpenAITTS(
   options: UseOpenAITTSOptions = {}
 ): UseOpenAITTSReturn {
-  const { onFallbackActive } = options;
-
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
-  const onEndRef = useRef<(() => void) | undefined>(undefined);
   const abortControllerRef = useRef<AbortController | null>(null);
   const useFallbackRef = useRef(false);
   const fallbackNotifiedRef = useRef(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  const getAudioContext = useCallback(() => {
-    if (!audioContextRef.current || audioContextRef.current.state === "closed") {
-      audioContextRef.current = new AudioContext();
+  /** true while audio is playing or a fetch is in-flight for the current item */
+  const isPlayingRef = useRef(false);
+  const queueRef = useRef<Array<{ text: string; role: SpeakerRole }>>([]);
+
+  // Keep onFallbackActive stable across renders without stale-closure issues
+  const onFallbackActiveRef = useRef(options.onFallbackActive);
+  onFallbackActiveRef.current = options.onFallbackActive;
+
+  /**
+   * doPlayRef / doPlayNextRef are reassigned every render.
+   * They are only ever called asynchronously (from onended handlers or Promises),
+   * so they always pick up the latest version — no stale-closure problem.
+   */
+  const doPlayRef = useRef<(text: string, role: SpeakerRole) => void>(() => {});
+  const doPlayNextRef = useRef<() => void>(() => {});
+
+  // --- advance the queue -------------------------------------------------
+  doPlayNextRef.current = () => {
+    const next = queueRef.current.shift();
+    if (next) {
+      isPlayingRef.current = true;
+      doPlayRef.current(next.text, next.role);
+    } else {
+      isPlayingRef.current = false;
+      setIsSpeaking(false);
     }
-    return audioContextRef.current;
-  }, []);
+  };
+
+  // --- play one item (OpenAI TTS, with browser fallback) -----------------
+  doPlayRef.current = (text: string, role: SpeakerRole) => {
+    if (!text.trim()) {
+      doPlayNextRef.current();
+      return;
+    }
+
+    // --- browser SpeechSynthesis fallback ---
+    if (useFallbackRef.current) {
+      if (typeof window === "undefined" || !window.speechSynthesis) {
+        doPlayNextRef.current();
+        return;
+      }
+      if (!fallbackNotifiedRef.current) {
+        fallbackNotifiedRef.current = true;
+        onFallbackActiveRef.current?.();
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utteranceRef.current = utterance;
+      const onDone = () => {
+        utteranceRef.current = null;
+        doPlayNextRef.current();
+      };
+      utterance.onend = onDone;
+      utterance.onerror = onDone;
+      window.speechSynthesis.speak(utterance);
+      return;
+    }
+
+    // --- OpenAI TTS ---
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/speak", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, speakerRole: role }),
+          signal: controller.signal,
+        });
+
+        if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
+
+        const arrayBuffer = await res.arrayBuffer();
+        if (controller.signal.aborted) return;
+
+        if (
+          !audioContextRef.current ||
+          audioContextRef.current.state === "closed"
+        ) {
+          audioContextRef.current = new AudioContext();
+        }
+        const audioContext = audioContextRef.current;
+        if (audioContext.state === "suspended") await audioContext.resume();
+
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        if (controller.signal.aborted) return;
+
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        sourceNodeRef.current = source;
+
+        source.onended = () => {
+          if (sourceNodeRef.current === source) {
+            sourceNodeRef.current = null;
+            doPlayNextRef.current();
+          }
+        };
+
+        source.start(0);
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") return;
+        console.error("TTS error — falling back to browser TTS:", err);
+        useFallbackRef.current = true;
+        if (!controller.signal.aborted) {
+          // Retry the same item via browser fallback
+          doPlayRef.current(text, role);
+        } else {
+          doPlayNextRef.current();
+        }
+      }
+    })();
+  };
+
+  // -----------------------------------------------------------------------
 
   const stop = useCallback(() => {
+    queueRef.current = [];
+    isPlayingRef.current = false;
+
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
 
@@ -51,130 +169,55 @@ export function useOpenAITTS(
       sourceNodeRef.current = null;
     }
 
-    // Stop browser TTS if active
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
-    if (utteranceRef.current) {
-      utteranceRef.current = null;
-    }
+    utteranceRef.current = null;
 
-    onEndRef.current = undefined;
     setIsSpeaking(false);
   }, []);
-
-  /** Fallback: speak via browser SpeechSynthesis */
-  const speakWithBrowserTTS = useCallback(
-    (text: string, onEnd?: () => void) => {
-      if (typeof window === "undefined" || !window.speechSynthesis) {
-        setIsSpeaking(false);
-        onEnd?.();
-        return;
-      }
-
-      if (!fallbackNotifiedRef.current) {
-        fallbackNotifiedRef.current = true;
-        onFallbackActive?.();
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utteranceRef.current = utterance;
-
-      utterance.onend = () => {
-        utteranceRef.current = null;
-        setIsSpeaking(false);
-        onEnd?.();
-      };
-      utterance.onerror = () => {
-        utteranceRef.current = null;
-        setIsSpeaking(false);
-        onEnd?.();
-      };
-
-      window.speechSynthesis.speak(utterance);
-    },
-    [onFallbackActive]
-  );
 
   const speak = useCallback(
     (text: string, speakerRole: SpeakerRole, onEnd?: () => void) => {
       if (!text.trim()) return;
-
       stop();
 
-      onEndRef.current = onEnd;
-
-      // If we already know OpenAI TTS is unavailable, go straight to fallback
-      if (useFallbackRef.current) {
-        setIsSpeaking(true);
-        speakWithBrowserTTS(text, onEnd);
-        return;
-      }
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+      isPlayingRef.current = true;
       setIsSpeaking(true);
 
-      (async () => {
-        try {
-          const res = await fetch("/api/speak", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text, speakerRole }),
-            signal: controller.signal,
-          });
+      if (onEnd) {
+        // Wrap doPlayNext so onEnd fires when this item's audio ends and queue
+        // is empty (stop() cleared the queue, so onEnd fires after this item).
+        const original = doPlayNextRef.current;
+        doPlayNextRef.current = () => {
+          doPlayNextRef.current = original;
+          original();
+          onEnd();
+        };
+      }
 
-          if (!res.ok) {
-            throw new Error(`TTS request failed: ${res.status}`);
-          }
-
-          const arrayBuffer = await res.arrayBuffer();
-          if (controller.signal.aborted) return;
-
-          const audioContext = getAudioContext();
-          if (audioContext.state === "suspended") {
-            await audioContext.resume();
-          }
-
-          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-          if (controller.signal.aborted) return;
-
-          const source = audioContext.createBufferSource();
-          source.buffer = audioBuffer;
-          source.connect(audioContext.destination);
-          sourceNodeRef.current = source;
-
-          source.onended = () => {
-            if (sourceNodeRef.current === source) {
-              sourceNodeRef.current = null;
-              setIsSpeaking(false);
-              const cb = onEndRef.current;
-              onEndRef.current = undefined;
-              cb?.();
-            }
-          };
-
-          source.start(0);
-        } catch (err) {
-          if (err instanceof Error && err.name === "AbortError") return;
-          console.error("TTS playback error — falling back to browser TTS:", err);
-
-          // Mark fallback for all future calls
-          useFallbackRef.current = true;
-
-          if (!controller.signal.aborted) {
-            speakWithBrowserTTS(text, onEnd);
-          } else {
-            setIsSpeaking(false);
-            onEndRef.current = undefined;
-          }
-        }
-      })();
+      doPlayRef.current(text, speakerRole);
     },
-    [stop, getAudioContext, speakWithBrowserTTS]
+    [stop]
   );
 
-  return { isSpeaking, speak, stop };
+  /**
+   * Add a sentence to the playback queue.
+   * If nothing is currently playing, playback starts immediately —
+   * this means first audio can begin after only the first sentence has been
+   * generated, rather than waiting for the complete LLM response.
+   */
+  const enqueue = useCallback((text: string, speakerRole: SpeakerRole) => {
+    if (!text.trim()) return;
+
+    if (!isPlayingRef.current) {
+      isPlayingRef.current = true;
+      setIsSpeaking(true);
+      doPlayRef.current(text, speakerRole);
+    } else {
+      queueRef.current.push({ text, role: speakerRole });
+    }
+  }, []);
+
+  return { isSpeaking, speak, enqueue, stop };
 }

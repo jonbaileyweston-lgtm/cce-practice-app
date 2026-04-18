@@ -47,21 +47,24 @@ export async function POST(req: NextRequest) {
     const role = speakerRole in VOICE_CONFIG ? speakerRole : "examiner";
     const { voice, instructions } = VOICE_CONFIG[role];
 
-    const mp3Response = await openai.audio.speech.create({
+    const ttsResponse = await openai.audio.speech.create({
       model: "gpt-4o-mini-tts",
       voice,
       input: text,
-      response_format: "wav",
+      // mp3 is a streamable format — the client can begin decoding before the
+      // full file has been received, unlike wav which requires the header first.
+      response_format: "mp3",
       instructions,
       ...(role === "examiner" ? { speed: 1.2 } : {}),
     });
 
-    const buffer = Buffer.from(await mp3Response.arrayBuffer());
-
-    return new Response(buffer, {
+    // Pipe the OpenAI response stream directly to the client — no server-side
+    // buffering. This removes one full round-trip of latency (the server no
+    // longer has to download the complete audio before sending anything).
+    return new Response(ttsResponse.body, {
       headers: {
-        "Content-Type": "audio/wav",
-        "Content-Length": buffer.length.toString(),
+        "Content-Type": "audio/mpeg",
+        "Transfer-Encoding": "chunked",
         "Cache-Control": "no-cache",
       },
     });

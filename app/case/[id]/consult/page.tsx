@@ -1,6 +1,26 @@
 "use client";
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
+
+// ---------------------------------------------------------------------------
+// Sentence-level TTS helpers (mirrors exam/page.tsx)
+// ---------------------------------------------------------------------------
+
+function extractCompleteSentences(buffer: string): {
+  toSpeak: string;
+  remaining: string;
+} {
+  const match = /^([\s\S]+[.!?])(?=\s+[A-Z"'])/.exec(buffer);
+  if (!match) return { toSpeak: "", remaining: buffer };
+  return {
+    toSpeak: match[1].trim(),
+    remaining: buffer.slice(match[1].length).trimStart(),
+  };
+}
+
+function cleanPatientText(text: string): string {
+  return text.replace(/\s{2,}/g, " ").trim();
+}
 import { useRouter } from "next/navigation";
 import { getCaseById } from "@/data/cases";
 import { notFound } from "next/navigation";
@@ -35,6 +55,8 @@ export default function ConsultPage({
   const [isConsultEnded, setIsConsultEnded] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [isPatientTyping, setIsPatientTyping] = useState(false);
+  /** Live text from the patient stream; null when not streaming */
+  const [streamingText, setStreamingText] = useState<string | null>(null);
   const [interimText, setInterimText] = useState("");
   const [manualInput, setManualInput] = useState("");
   const [useManualMode, setUseManualMode] = useState(false);
@@ -55,7 +77,7 @@ export default function ConsultPage({
   const voiceRole =
     caseData.patientGender === "M" ? "patient_male" : "patient_female";
 
-  const { speak, stop: stopSpeaking, isSpeaking } = useOpenAITTS({
+  const { speak, enqueue, stop: stopSpeaking, isSpeaking } = useOpenAITTS({
     onFallbackActive: () => setIsTTSFallback(true),
   });
 
@@ -84,7 +106,7 @@ export default function ConsultPage({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, interimText, isPatientTyping]);
+  }, [messages, interimText, isPatientTyping, streamingText]);
 
   // Consultation timer
   useEffect(() => {
@@ -144,6 +166,7 @@ export default function ConsultPage({
   const streamPatientResponse = useCallback(
     async (currentMessages: Message[]) => {
       setIsPatientTyping(true);
+      setStreamingText(null);
       setError(null);
 
       try {
@@ -158,6 +181,8 @@ export default function ConsultPage({
         const reader = res.body!.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
+        let sentenceBuffer = "";
+        let firstToken = true;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -169,33 +194,59 @@ export default function ConsultPage({
               if (data === "[DONE]") continue;
               try {
                 const parsed = JSON.parse(data);
-                if (parsed.text) fullText += parsed.text;
+                if (parsed.text) {
+                  fullText += parsed.text;
+                  sentenceBuffer += parsed.text;
+
+                  if (firstToken) {
+                    firstToken = false;
+                    setIsPatientTyping(false);
+                  }
+                  setStreamingText(fullText);
+
+                  if (!isTimeUpRef.current) {
+                    const { toSpeak, remaining } =
+                      extractCompleteSentences(sentenceBuffer);
+                    if (toSpeak) {
+                      const cleaned = cleanPatientText(toSpeak);
+                      if (cleaned) enqueue(cleaned, voiceRole);
+                      sentenceBuffer = remaining;
+                    }
+                  }
+                }
               } catch { /* ignore */ }
             }
           }
         }
 
-        setIsPatientTyping(false);
+        // Flush remaining sentence fragment
+        if (sentenceBuffer.trim() && !isTimeUpRef.current) {
+          const cleaned = cleanPatientText(sentenceBuffer);
+          if (cleaned) enqueue(cleaned, voiceRole);
+        }
 
-        if (fullText.trim()) {
+        setIsPatientTyping(false);
+        setStreamingText(null);
+
+        const finalText = cleanPatientText(fullText);
+        if (finalText) {
           const msg: Message = {
             role: "examiner", // "examiner" slot = patient voice in this mode
-            content: fullText.trim(),
+            content: finalText,
             timestamp: Date.now(),
           };
           setMessages((prev) => [...prev, msg]);
-          if (!isTimeUpRef.current) {
-            speak(fullText.trim(), voiceRole);
-          }
+          // TTS already started sentence-by-sentence via enqueue() above.
         }
       } catch (err) {
         setIsPatientTyping(false);
+        setStreamingText(null);
         setError("Failed to get patient response. Please try again.");
         console.error(err);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id, speak, voiceRole]
+    [id, enqueue, voiceRole]
   );
 
   const startConsult = async () => {
@@ -269,7 +320,7 @@ export default function ConsultPage({
     elapsedSeconds < TOTAL_CONSULT_SECONDS;
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900">
+    <div className="flex flex-col h-screen bg-slate-900 overflow-hidden">
       {/* Header */}
       <header className="bg-slate-800 border-b border-slate-700 flex-shrink-0">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
@@ -324,7 +375,7 @@ export default function ConsultPage({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-scroll">
+      <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
           {!isConsultStarted && (
             <div className="text-center py-16">
@@ -387,7 +438,8 @@ export default function ConsultPage({
             </div>
           )}
 
-          {isPatientTyping && (
+          {/* Patient typing dots — shown while waiting for first token */}
+          {isPatientTyping && streamingText === null && (
             <div className="flex gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm bg-emerald-700 text-white">
                 P
@@ -398,6 +450,19 @@ export default function ConsultPage({
                   <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                   <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Live streaming text — replaces dots as tokens arrive */}
+          {streamingText !== null && (
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm bg-emerald-700 text-white">
+                P
+              </div>
+              <div className="max-w-[78%] rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed bg-slate-700 text-slate-100">
+                {streamingText}
+                <span className="inline-block ml-1 animate-pulse opacity-60">▊</span>
               </div>
             </div>
           )}
