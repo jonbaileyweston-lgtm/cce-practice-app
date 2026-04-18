@@ -2,16 +2,24 @@
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { getCaseById } from "@/data/cases";
 import { notFound } from "next/navigation";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { useWhisperSTT } from "@/hooks/useWhisperSTT";
+import { useOpenAITTS } from "@/hooks/useOpenAITTS";
 import Timer from "@/components/Timer";
-import VoiceSelector from "@/components/VoiceSelector";
 import type { Message } from "@/types";
 
-const TOTAL_EXAM_SECONDS = 15 * 60;
+const TOTAL_EXAM_SECONDS = 10 * 60; // 10 minutes — matches real CCE station length
+const WARNING_THRESHOLD = TOTAL_EXAM_SECONDS - 120; // 8 min elapsed → 2 min left
+const AUTOSAVE_KEY = (id: string) => `cce-autosave-${id}`;
+
+interface AutosaveData {
+  messages: Message[];
+  elapsedSeconds: number;
+  currentQuestionIndex: number;
+  caseId: string;
+  savedAt: number;
+}
 
 export default function ExamPage({
   params,
@@ -27,45 +35,63 @@ export default function ExamPage({
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Separate flags: exam started (examiner has asked Q1) vs timer started (candidate first spoke)
   const [isExamStarted, setIsExamStarted] = useState(false);
+  const [isTimerStarted, setIsTimerStarted] = useState(false);
   const [isExamEnded, setIsExamEnded] = useState(false);
+  const [isTimeUp, setIsTimeUp] = useState(false);
+  const [hasShownWarning, setHasShownWarning] = useState(false);
+
   const [isExaminerTyping, setIsExaminerTyping] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [manualInput, setManualInput] = useState("");
   const [useManualMode, setUseManualMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [garbledWarning, setGarbledWarning] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTTSFallback, setIsTTSFallback] = useState(false);
+
+  // Session recovery
+  const [recoveredSession, setRecoveredSession] = useState<AutosaveData | null>(null);
+  const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const autosaveRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentQIndexRef = useRef(0);
   const messagesRef = useRef<Message[]>([]);
   const elapsedSecondsRef = useRef(0);
+  const hasTimerStartedRef = useRef(false);
+  const hasPlayedWarningRef = useRef(false);
+  const isTimeUpRef = useRef(false);
 
-  const {
-    voices,
-    selectedVoice,
-    setSelectedVoice,
-    speak,
-    stop: stopSpeaking,
-    isSpeaking,
-  } = useSpeechSynthesis();
+  const { speak, stop: stopSpeaking, isSpeaking } = useOpenAITTS({
+    onFallbackActive: () => setIsTTSFallback(true),
+  });
 
   const handleFinalTranscript = useCallback(
     (transcript: string) => {
       if (!transcript.trim() || isSubmitting) return;
       setInterimText("");
+      setGarbledWarning(null);
       submitCandidateMessage(transcript.trim());
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isSubmitting]
   );
 
+  const handleGarbledTranscript = useCallback((warning: string) => {
+    setGarbledWarning(warning);
+    setInterimText("");
+  }, []);
+
   const { isListening, isSupported, startListening, stopListening } =
-    useSpeechRecognition({
+    useWhisperSTT({
       onInterimResult: setInterimText,
       onFinalResult: handleFinalTranscript,
+      onGarbledResult: handleGarbledTranscript,
       onError: (err) => {
         setError(err);
         setUseManualMode(true);
@@ -77,31 +103,124 @@ export default function ExamPage({
     messagesRef.current = messages;
   }, [messages]);
 
-  // Auto-scroll to bottom of transcript
+  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, interimText, isExaminerTyping]);
 
-  // Timer
+  // Check for recoverable session on mount
   useEffect(() => {
-    if (!isExamStarted || isExamEnded) return;
+    try {
+      const saved = localStorage.getItem(AUTOSAVE_KEY(id));
+      if (saved) {
+        const data = JSON.parse(saved) as AutosaveData;
+        const ageMs = Date.now() - data.savedAt;
+        if (
+          data.caseId === id &&
+          data.messages?.length > 0 &&
+          ageMs < 24 * 60 * 60 * 1000
+        ) {
+          setRecoveredSession(data);
+          setShowRecoveryPrompt(true);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Timer — only runs after candidate first speaks
+  useEffect(() => {
+    if (!isTimerStarted || isExamEnded) return;
 
     timerRef.current = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
       setElapsedSeconds(elapsed);
-
       elapsedSecondsRef.current = elapsed;
-      if (elapsed >= TOTAL_EXAM_SECONDS) {
+
+      // 2-minute warning beep
+      if (elapsed >= WARNING_THRESHOLD && !hasPlayedWarningRef.current) {
+        hasPlayedWarningRef.current = true;
+        setHasShownWarning(true);
+        playWarningBeep();
+      }
+
+      // Time up
+      if (elapsed >= TOTAL_EXAM_SECONDS && !isTimeUpRef.current) {
+        isTimeUpRef.current = true;
         clearInterval(timerRef.current!);
-        handleExamEnd("time");
+        setIsTimeUp(true);
       }
     }, 1000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExamStarted, isExamEnded]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTimerStarted, isExamEnded]);
+
+  // Auto-save every 30 seconds
+  useEffect(() => {
+    if (!isExamStarted || isExamEnded) return;
+
+    autosaveRef.current = setInterval(() => {
+      try {
+        const saveData: AutosaveData = {
+          messages: messagesRef.current,
+          elapsedSeconds: elapsedSecondsRef.current,
+          currentQuestionIndex: currentQIndexRef.current,
+          caseId: id,
+          savedAt: Date.now(),
+        };
+        localStorage.setItem(AUTOSAVE_KEY(id), JSON.stringify(saveData));
+      } catch {
+        // storage quota or unavailable — ignore
+      }
+    }, 30000);
+
+    return () => {
+      if (autosaveRef.current) clearInterval(autosaveRef.current);
+    };
+  }, [isExamStarted, isExamEnded, id]);
+
+  // When time is up: ask examiner for closing remark, then navigate
+  useEffect(() => {
+    if (!isTimeUp) return;
+    stopSpeaking();
+
+    const timeUpMsg: Message = {
+      role: "candidate",
+      content:
+        "[SYSTEM: EXAMINATION TIME HAS EXPIRED. Please deliver a brief professional closing remark to conclude the case discussion — e.g. 'Thank you, that concludes our case discussion.']",
+      timestamp: Date.now(),
+      questionNumber: caseData!.questions[currentQIndexRef.current]?.number,
+    };
+    const msgs = [...messagesRef.current, timeUpMsg];
+    setMessages(msgs);
+
+    streamExaminerResponse(msgs, currentQIndexRef.current).finally(() => {
+      setTimeout(() => handleExamEnd("time"), 3000);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTimeUp]);
+
+  const playWarningBeep = () => {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch {
+      // ignore — audio context may not be available
+    }
+  };
 
   const addExaminerMessage = (text: string, qIndex: number) => {
     const msg: Message = {
@@ -163,9 +282,39 @@ export default function ExamPage({
 
         setIsExaminerTyping(false);
 
+        // Strip any leaked [PROMPT]/[PROBE]/[MUST-USE] labels and markdown
+        // formatting that Claude may accidentally include in its response.
+        fullText = fullText
+          .replace(/\*{1,3}\[(PROMPT|PROBE|MUST-USE)\]\*{1,3}/gi, "")
+          .replace(/\[(PROMPT|PROBE|MUST-USE)\]/gi, "")
+          .replace(/\*{2,3}([^*]+)\*{2,3}/g, "$1")
+          .replace(/\s{2,}/g, " ")
+          .trim();
+
         if (fullText.trim()) {
-          addExaminerMessage(fullText.trim(), qIndex);
-          speak(fullText.trim());
+          // Detect if the examiner has transitioned to a new question.
+          // The system prompt instructs: "Moving to Question [N]..."
+          const transitionMatch = fullText.match(
+            /[Mm]oving (?:on )?to [Qq]uestion\s+(\d+)/
+          );
+          let resolvedQIndex = qIndex;
+          if (transitionMatch) {
+            const nextQNum = parseInt(transitionMatch[1], 10);
+            const nextQIdx = caseData!.questions.findIndex(
+              (q) => q.number === nextQNum
+            );
+            if (nextQIdx >= 0 && nextQIdx !== currentQIndexRef.current) {
+              resolvedQIndex = nextQIdx;
+              currentQIndexRef.current = nextQIdx;
+              setCurrentQuestionIndex(nextQIdx);
+            }
+          }
+
+          addExaminerMessage(fullText.trim(), resolvedQIndex);
+          // Only speak if not time-up (avoid TTS competing with closing sequence)
+          if (!isTimeUpRef.current) {
+            speak(fullText.trim(), "examiner");
+          }
 
           // Check if examiner concluded the exam
           if (
@@ -187,14 +336,48 @@ export default function ExamPage({
 
   const startExam = async () => {
     setIsExamStarted(true);
-    startTimeRef.current = Date.now();
+    // Timer does NOT start here — it starts when the candidate first speaks
     await streamExaminerResponse([], 0);
   };
 
+  const resumeSession = () => {
+    if (!recoveredSession) return;
+    setShowRecoveryPrompt(false);
+    setMessages(recoveredSession.messages);
+    messagesRef.current = recoveredSession.messages;
+    const qIdx = recoveredSession.currentQuestionIndex;
+    currentQIndexRef.current = qIdx;
+    setCurrentQuestionIndex(qIdx);
+    setIsExamStarted(true);
+    // Restore elapsed time and restart timer
+    elapsedSecondsRef.current = recoveredSession.elapsedSeconds;
+    setElapsedSeconds(recoveredSession.elapsedSeconds);
+    startTimeRef.current = Date.now() - recoveredSession.elapsedSeconds * 1000;
+    hasTimerStartedRef.current = true;
+    setIsTimerStarted(true);
+  };
+
+  const dismissRecovery = () => {
+    setShowRecoveryPrompt(false);
+    setRecoveredSession(null);
+    try {
+      localStorage.removeItem(AUTOSAVE_KEY(id));
+    } catch {
+      // ignore
+    }
+  };
+
   const submitCandidateMessage = async (text: string) => {
-    if (isSubmitting || isExamEnded || !text.trim()) return;
+    if (isSubmitting || isExamEnded || isTimeUp || !text.trim()) return;
     setIsSubmitting(true);
     stopSpeaking();
+
+    // Start the consultation timer on first candidate speech
+    if (!hasTimerStartedRef.current) {
+      hasTimerStartedRef.current = true;
+      startTimeRef.current = Date.now();
+      setIsTimerStarted(true);
+    }
 
     const candidateMsg: Message = {
       role: "candidate",
@@ -203,8 +386,12 @@ export default function ExamPage({
       questionNumber: caseData!.questions[currentQIndexRef.current]?.number,
     };
 
-    const newMessages = [...messages, candidateMsg];
+    // Use the ref (not the closure-captured state) so we always include every
+    // prior message even if the component hasn't re-rendered since the last
+    // examiner reply was appended.
+    const newMessages = [...messagesRef.current, candidateMsg];
     setMessages(newMessages);
+    messagesRef.current = newMessages;
     setIsSubmitting(false);
 
     await streamExaminerResponse(newMessages, currentQIndexRef.current);
@@ -238,6 +425,7 @@ export default function ExamPage({
     setIsExamEnded(true);
     stopSpeaking();
     if (timerRef.current) clearInterval(timerRef.current);
+    if (autosaveRef.current) clearInterval(autosaveRef.current);
 
     // Save to history
     try {
@@ -249,7 +437,14 @@ export default function ExamPage({
       // ignore
     }
 
-    // Store session for the results page (use refs to get latest values)
+    // Clear autosave — session complete
+    try {
+      localStorage.removeItem(AUTOSAVE_KEY(id));
+    } catch {
+      // ignore
+    }
+
+    // Store full session for results page
     const sessionData = {
       messages: messagesRef.current,
       durationSeconds: elapsedSecondsRef.current,
@@ -257,7 +452,6 @@ export default function ExamPage({
     };
     sessionStorage.setItem("cce-last-session", JSON.stringify(sessionData));
 
-    // Redirect to results
     router.push(`/case/${id}/results`);
   };
 
@@ -271,6 +465,7 @@ export default function ExamPage({
     if (isListening) {
       stopListening();
     } else {
+      setGarbledWarning(null);
       startListening();
     }
   };
@@ -282,8 +477,46 @@ export default function ExamPage({
     currentQIndexRef.current = currentQuestionIndex;
   }, [currentQuestionIndex]);
 
+  // 2-minute warning banner visible
+  const showWarningBanner =
+    isTimerStarted &&
+    !isTimeUp &&
+    elapsedSeconds >= WARNING_THRESHOLD &&
+    elapsedSeconds < TOTAL_EXAM_SECONDS;
+
   return (
     <div className="flex flex-col h-screen bg-slate-900">
+
+      {/* Session recovery prompt */}
+      {showRecoveryPrompt && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+            <div className="text-3xl mb-3">💾</div>
+            <h2 className="text-lg font-bold text-slate-900 mb-2">Session found</h2>
+            <p className="text-sm text-slate-600 mb-1">
+              An interrupted session for <strong>{caseData.patientName}</strong> was found.
+            </p>
+            <p className="text-xs text-slate-400 mb-5">
+              {recoveredSession?.messages.filter(m => !m.content.startsWith("[SYSTEM:")).length ?? 0} messages · {Math.floor((recoveredSession?.elapsedSeconds ?? 0) / 60)}m{(recoveredSession?.elapsedSeconds ?? 0) % 60}s elapsed
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={resumeSession}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
+              >
+                Resume session
+              </button>
+              <button
+                onClick={dismissRecovery}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-sm transition-colors"
+              >
+                Start fresh
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <header className="bg-slate-800 border-b border-slate-700 flex-shrink-0">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
@@ -302,18 +535,42 @@ export default function ExamPage({
             <Timer
               totalSeconds={TOTAL_EXAM_SECONDS}
               elapsedSeconds={elapsedSeconds}
+              isStarted={isTimerStarted}
             />
           )}
 
-          <div className="flex items-center gap-2">
-            <VoiceSelector
-              voices={voices}
-              selectedVoice={selectedVoice}
-              onSelect={setSelectedVoice}
-            />
-          </div>
+          <div className="flex items-center gap-2" />
         </div>
       </header>
+
+      {/* TTS fallback notice */}
+      {isTTSFallback && (
+        <div className="bg-slate-700 border-b border-slate-600 text-slate-300 text-xs px-4 py-1.5 text-center flex-shrink-0">
+          Using device audio (OpenAI TTS unavailable)
+        </div>
+      )}
+
+      {/* 2-minute warning banner */}
+      {showWarningBanner && (
+        <div className="bg-amber-700/80 border-b border-amber-600 flex-shrink-0">
+          <div className="max-w-4xl mx-auto px-4 py-2 text-center">
+            <span className="text-amber-100 text-sm font-bold">
+              ⚠️ 2 minutes remaining
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Time-up banner */}
+      {isTimeUp && (
+        <div className="bg-red-800/90 border-b border-red-700 flex-shrink-0">
+          <div className="max-w-4xl mx-auto px-4 py-2 text-center">
+            <span className="text-red-100 text-sm font-bold">
+              ⏰ Time is up — waiting for examiner closing remark
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Current question banner */}
       {isExamStarted && currentQuestion && (
@@ -329,10 +586,21 @@ export default function ExamPage({
         </div>
       )}
 
+      {/* Timer not yet started notice */}
+      {isExamStarted && !isTimerStarted && !isExamEnded && (
+        <div className="bg-slate-700/60 border-b border-slate-600 flex-shrink-0">
+          <div className="max-w-4xl mx-auto px-4 py-1.5 text-center">
+            <span className="text-slate-400 text-xs">
+              Timer starts when you speak your first answer
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Messages transcript */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-scroll">
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-          {!isExamStarted && (
+          {!isExamStarted && !showRecoveryPrompt && (
             <div className="text-center py-16">
               <div className="text-5xl mb-4">🎙️</div>
               <h2 className="text-xl font-semibold text-white mb-2">
@@ -340,7 +608,7 @@ export default function ExamPage({
               </h2>
               <p className="text-slate-400 mb-6 text-sm max-w-sm mx-auto">
                 The AI examiner will ask you {caseData.questions.length} questions.
-                Speak your answers aloud using the microphone button below.
+                The 10-minute timer starts when you speak your first answer.
               </p>
               <button
                 onClick={startExam}
@@ -381,7 +649,7 @@ export default function ExamPage({
               </div>
             ))}
 
-          {/* Interim transcript (while speaking) */}
+          {/* Interim transcript */}
           {isListening && interimText && (
             <div className="flex gap-3 flex-row-reverse">
               <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm bg-emerald-600 text-white">
@@ -410,6 +678,12 @@ export default function ExamPage({
             </div>
           )}
 
+          {garbledWarning && (
+            <div className="bg-amber-900/50 border border-amber-700 rounded-xl px-4 py-3 text-sm text-amber-300">
+              {garbledWarning}
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-900/50 border border-red-700 rounded-xl px-4 py-3 text-sm text-red-300">
               {error}
@@ -421,13 +695,11 @@ export default function ExamPage({
       </div>
 
       {/* Bottom controls */}
-      {isExamStarted && !isExamEnded && (
+      {isExamStarted && !isExamEnded && !isTimeUp && (
         <div className="bg-slate-800 border-t border-slate-700 flex-shrink-0 safe-bottom">
           <div className="max-w-4xl mx-auto px-4 py-4">
             {!useManualMode ? (
-              /* Voice mode */
               <div className="flex items-center gap-4">
-                {/* Mic button */}
                 <button
                   onClick={handleMicClick}
                   disabled={isExaminerTyping || isSpeaking}
@@ -455,7 +727,7 @@ export default function ExamPage({
                             key={i}
                             className="w-1 bg-blue-400 rounded-full animate-pulse"
                             style={{
-                              height: `${Math.random() * 100}%`,
+                              height: `${[60, 80, 100, 70, 50][i]}%`,
                               animationDelay: `${i * 100}ms`,
                             }}
                           />
@@ -477,7 +749,9 @@ export default function ExamPage({
                     <p className="text-sm text-slate-400">Examiner is responding...</p>
                   ) : (
                     <p className="text-sm text-slate-400">
-                      Press 🎤 to speak your answer
+                      {isTimerStarted
+                        ? "Press 🎤 to speak your answer"
+                        : "Press 🎤 to speak — timer starts with your first word"}
                     </p>
                   )}
                 </div>
@@ -507,7 +781,6 @@ export default function ExamPage({
                 </div>
               </div>
             ) : (
-              /* Manual/text mode */
               <div className="flex items-end gap-2">
                 <textarea
                   value={manualInput}
@@ -540,6 +813,17 @@ export default function ExamPage({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Locked controls when time is up */}
+      {isExamStarted && !isExamEnded && isTimeUp && (
+        <div className="bg-slate-800 border-t border-slate-700 flex-shrink-0">
+          <div className="max-w-4xl mx-auto px-4 py-4 text-center">
+            <p className="text-sm text-slate-400">
+              Examination time has ended. Waiting for examiner to conclude...
+            </p>
           </div>
         </div>
       )}

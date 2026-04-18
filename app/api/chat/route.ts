@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const systemPrompt = buildExaminerSystemPrompt(caseData);
+    const isOpening = messages.length === 0;
+    const systemPrompt = buildExaminerSystemPrompt(caseData, isOpening, currentQuestionIndex);
 
     // Convert our Message[] to Anthropic message format
     const anthropicMessages = messages.map((m) => ({
@@ -34,17 +35,17 @@ export async function POST(req: NextRequest) {
       content: m.content,
     }));
 
-    // If no messages yet, send an empty user message to trigger the opening
+    // If no messages yet, send a trigger to start the exam
     if (anthropicMessages.length === 0) {
       anthropicMessages.push({
         role: "user",
-        content: `[SYSTEM: The candidate is ready. Please introduce yourself briefly and ask Question ${currentQuestionIndex + 1}.]`,
+        content: `[SYSTEM: The candidate is ready. Please introduce yourself (one sentence) and ask Question 1.]`,
       });
     }
 
     const stream = await anthropic.messages.stream({
       model: "claude-sonnet-4-5",
-      max_tokens: 600,
+      max_tokens: 1200,
       system: systemPrompt,
       messages: anthropicMessages,
     });

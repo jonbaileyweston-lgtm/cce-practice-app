@@ -42,6 +42,63 @@ export interface PatientRecord {
   immunisations: string[];
 }
 
+/** RACGP curriculum domains used for case tagging and performance tracking */
+export type RacgpDomain =
+  | "undifferentiated"
+  | "chronic_disease"
+  | "mental_health"
+  | "paediatrics"
+  | "womens_health"
+  | "older_patient"
+  | "preventive"
+  | "difficult_conversation"
+  | "aboriginal_health"
+  | "rural_remote";
+
+export const RACGP_DOMAIN_LABELS: Record<RacgpDomain, string> = {
+  undifferentiated: "Undifferentiated presentations",
+  chronic_disease: "Chronic disease management",
+  mental_health: "Mental health / Perinatal",
+  paediatrics: "Paediatrics",
+  womens_health: "Women's health",
+  older_patient: "Older patients",
+  preventive: "Preventive & Population health",
+  difficult_conversation: "Difficult conversations",
+  aboriginal_health: "Aboriginal & Torres Strait Islander health",
+  rural_remote: "Rural & Remote medicine",
+};
+
+export type CaseDifficulty = "standard" | "challenging" | "complex";
+
+export const DIFFICULTY_LABELS: Record<CaseDifficulty, string> = {
+  standard: "Standard",
+  challenging: "Challenging",
+  complex: "Complex",
+};
+
+/**
+ * Patient persona for Recorded Consultation simulation mode.
+ * Not required for Case Discussion cases.
+ */
+export interface PatientPersona {
+  /** Opening line the patient says when the candidate enters */
+  openingStatement: string;
+  /** History items the patient offers voluntarily when asked open questions */
+  volunteerHistory: string[];
+  /** Items the patient only reveals if specifically and directly asked */
+  withheldHistory: string[];
+  /** Patient's ideas, concerns, and expectations */
+  ice: {
+    ideas: string;
+    concerns: string;
+    expectations: string;
+  };
+  /** Emotional tone and manner (e.g. "anxious and tearful", "matter-of-fact") */
+  demeanour: string;
+  /** How the patient reacts to medical jargon */
+  responseToJargon: string;
+}
+
 export interface Case {
   id: string;
   patientName: string;
@@ -49,7 +106,18 @@ export interface Case {
   patientGender: "M" | "F";
   presentingComplaint: string;
   topics: string[];
+  /** Primary RACGP curriculum domain this case tests */
+  domain: RacgpDomain;
+  /** Relative difficulty of this case */
+  difficulty: CaseDifficulty;
   scenario: string;
+  /**
+   * Verbatim candidate-information sheet (as on the official PDF). When set,
+   * the case prep screen shows only this text (plus standard headings). When
+   * omitted, the prep screen uses {@link scenario} only so we do not duplicate
+   * or accidentally surface structured data that may contain spoilers.
+   */
+  candidateInformation?: string;
   patientRecord: PatientRecord;
   questions: Question[];
   competentCandidateCriteria: CompetentCandidateCriteria[];
@@ -57,6 +125,11 @@ export interface Case {
   debriefNotes?: string;
   icpcCode?: string;
   year?: string;
+  /**
+   * Patient persona for Recorded Consultation simulation mode.
+   * If not defined, only Case Discussion mode is available for this case.
+   */
+  patientPersona?: PatientPersona;
 }
 
 // Exam session state
