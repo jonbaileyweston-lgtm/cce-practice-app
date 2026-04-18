@@ -11,6 +11,7 @@ const anthropic = new Anthropic({
 });
 
 export async function POST(req: NextRequest) {
+  console.log("[v0] Chat API called, ANTHROPIC_API_KEY exists:", !!process.env.ANTHROPIC_API_KEY);
   try {
     const { caseId, messages, currentQuestionIndex } = (await req.json()) as {
       caseId: string;
@@ -80,9 +81,10 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Chat API error:", error);
+    console.error("[v0] Chat API error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: "Failed to generate examiner response" }),
+      JSON.stringify({ error: "Failed to generate examiner response", details: errorMessage }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
