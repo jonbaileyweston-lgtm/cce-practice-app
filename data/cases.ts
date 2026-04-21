@@ -3003,6 +3003,639 @@ Examination: No focal neurological deficit. Normal gait. No allodynia. No muscle
       responseToJargon: "Knows opioid terminology well but shuts down if clinical language feels like a barrier or weapon. Responds to plain, direct communication.",
     },
   },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // BARKER — Nola, 74F, Sulphonylurea-Induced Hypoglycaemia / T2DM
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "barker",
+    patientName: "Nola BARKER",
+    patientAge: 74,
+    patientGender: "F",
+    presentingComplaint: "Brought in by daughter — confused and shaking at home; known T2DM on recently escalated sulphonylurea",
+    topics: ["Type 2 Diabetes", "Hypoglycaemia", "Sulphonylurea", "Medication Review", "Older Patients", "Chronic Disease Management"],
+    domain: "chronic_disease",
+    difficulty: "challenging",
+    icpcCode: "T – Endocrine, metabolic and nutritional",
+    year: "2025",
+    scenario: `Nola BARKER, 74 years, is a retired primary school teacher. She is brought to your clinic by her daughter, Cheryl, who found Nola "confused and shaking" at home this morning.
+
+Nola has a six-year history of type 2 diabetes. She is a patient of your colleague who is on leave. At her last review three months ago, her HbA1c remained at 8.1% (65 mmol/mol) despite lifestyle advice and metformin 1000 mg twice daily. Her gliclazide MR was therefore increased from 60 mg to 120 mg daily at that visit.
+
+Nola also takes:
+• Rosuvastatin 10 mg for hypercholesterolaemia
+• Irbesartan 150 mg for hypertension (blood pressure 132/78 mmHg at last visit)
+• Aspirin 100 mg daily
+
+Cheryl tells you Nola had an early breakfast today and has since been "not making sense" and has been trembling. Nola herself feels dizzy and nauseous.
+
+On initial assessment:
+• Nola is pale and diaphoretic
+• Conscious but confused — GCS 14 (E4, V4, M6)
+• Heart rate 104/min
+• Blood pressure 118/74 mmHg
+• Finger-prick blood glucose (FPBG): 2.4 mmol/L`,
+    patientRecord: {
+      name: "Nola BARKER",
+      age: 74,
+      gender: "Female",
+      pronouns: "She/Her",
+      sexAssignedAtBirth: "Female",
+      indigenousStatus: "Not Aboriginal or Torres Strait Islander",
+      allergies: "Nil known",
+      medications: [
+        "Metformin 1000 mg twice daily",
+        "Gliclazide MR 120 mg once daily (recently increased from 60 mg, 3 months ago)",
+        "Rosuvastatin 10 mg once daily",
+        "Irbesartan 150 mg once daily",
+        "Aspirin 100 mg once daily",
+      ],
+      pastHistory: [
+        "6 years ago: Type 2 diabetes mellitus",
+        "4 years ago: Hypertension",
+        "3 years ago: Hypercholesterolaemia",
+        "1 year ago: Right knee osteoarthritis — managed conservatively",
+      ],
+      socialHistory: {
+        "Living situation": "Lives alone in her own home; daughter Cheryl lives 10 minutes away",
+        "Occupation": "Retired primary school teacher",
+        "Mobility": "Independent; attends local community centre twice weekly",
+        "Nutrition": "Cheryl reports Nola has been eating less since 'the new tablet dose' as she feels nauseous",
+      },
+      familyHistory: ["Mother: Type 2 diabetes, cardiovascular disease", "Father: Hypertension, deceased"],
+      smoking: "Non-smoker",
+      alcohol: "1–2 standard drinks on weekends",
+      immunisations: ["Influenza (annual, 2 months ago)", "Pneumococcal (PCV20, 1 year ago)", "COVID-19 up to date", "Shingrix completed"],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "What is your immediate assessment and management of Nola's presentation?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "What does the blood glucose reading of 2.4 mmol/L tell you?" },
+          { type: "prompt", text: "How do you treat hypoglycaemia in the general practice setting?" },
+          { type: "probe", text: "Nola is too confused to swallow safely. How does this change your approach?" },
+        ],
+      },
+      {
+        number: 2,
+        text: "Nola's blood glucose rises to 6.8 mmol/L after treatment. She is now more alert. What further history and assessment would you undertake?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "What do you want to know about the circumstances leading to this episode?" },
+          { type: "prompt", text: "What examination findings are relevant in this context?" },
+          { type: "probe", text: "Cheryl mentions Nola has had 'a couple of funny turns' over the past fortnight. What is the significance of this?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "How do you review and modify Nola's diabetes management in light of today's presentation?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "What is the appropriate HbA1c target for a 74-year-old patient like Nola, and why?" },
+          { type: "must-use", text: "Cheryl says: 'Her HbA1c was too high — surely the doctor increased the dose for a reason. Why would you reduce it?' How do you respond?" },
+          { type: "probe", text: "Are there safer alternatives to gliclazide for glycaemic management in this patient?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "How do you educate Nola and Cheryl about hypoglycaemia recognition, prevention and when to seek emergency care?",
+        timingMinutes: 2,
+        prompts: [
+          { type: "prompt", text: "What specific safety information does Nola need before leaving today?" },
+          { type: "prompt", text: "What follow-up arrangements do you make?" },
+          { type: "probe", text: "Nola asks: 'Does this mean my diabetes is getting worse?' How do you respond?" },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "10.1",
+        title: "A patient with significant illness is identified",
+        questions: [1],
+        points: [
+          "Immediately recognises FPBG 2.4 mmol/L as severe hypoglycaemia in the context of altered consciousness and adrenergic symptoms (pallor, diaphoresis, tachycardia).",
+          "Identifies sulphonylurea (gliclazide) as the causative agent — understands prolonged action compared to insulin.",
+          "Initiates treatment without delay: 15g fast-acting oral glucose (if able to swallow safely) or IV dextrose 50% 25–50 mL if impaired swallowing/GCS.",
+          "Recognises that sulphonylurea-induced hypoglycaemia may recur after initial correction — plans for extended observation (minimum 4–6 hours) and likely hospital admission or close GP monitoring.",
+          "Reassesses GCS and BGL at 15-minute intervals until stable.",
+          "Considers whether hospital admission is required — sulphonylurea-induced hypoglycaemia in an elderly patient living alone is high risk.",
+        ],
+      },
+      {
+        code: "2.1",
+        title: "A comprehensive biopsychosocial history is taken",
+        questions: [2],
+        points: [
+          "Elicits precipitating factors: reduced food intake, missed or delayed meals, recent dose increase, increased physical activity.",
+          "Reviews the pattern of recent episodes reported by Cheryl — identifies recurrent hypoglycaemia suggesting the 120 mg dose is excessive.",
+          "Assesses hypoglycaemia awareness: does Nola feel her warning symptoms (sweating, tremor, hunger) or is she hypoglycaemia-unaware?",
+          "Takes a full medication history including any recent changes to dose, timing, or adherence.",
+          "Assesses functional implications: lives alone, degree of cognitive recovery, ability to self-manage safely.",
+          "Considers renal function — CKD can reduce gliclazide clearance and prolong hypoglycaemia risk.",
+        ],
+      },
+      {
+        code: "3.1",
+        title: "Integrates and synthesises knowledge to make decisions in complex clinical situations",
+        questions: [3],
+        points: [
+          "Correctly identifies the HbA1c target for a 74-year-old with T2DM as less stringent than for younger patients — RACGP guidelines recommend 7–8% (53–64 mmol/mol) or even up to 8.5% in frail or elderly patients to avoid hypoglycaemia.",
+          "Concludes the gliclazide dose increase was disproportionate to the modest HbA1c elevation and that the risk of hypoglycaemia now outweighs any glycaemic benefit.",
+          "Recommends reducing gliclazide MR back to 60 mg or ceasing it and considering a safer alternative (DPP-4 inhibitor such as sitagliptin or vildagliptin, or SGLT2 inhibitor if appropriate) with significantly lower hypoglycaemia risk.",
+          "Checks renal function (eGFR, UEC) before prescribing alternatives — metformin and SGLT2i have eGFR thresholds.",
+          "Acknowledges Cheryl's concern directly and explains the individualised HbA1c target concept clearly.",
+        ],
+      },
+      {
+        code: "4.8",
+        title: "Provides effective explanations, education and choices to the patient",
+        questions: [4],
+        points: [
+          "Explains hypoglycaemia in plain language: 'Your blood sugar dropped too low — the new tablet dose was too strong for your body.'",
+          "Teaches the 15-15 rule for mild hypoglycaemia: 15g fast-acting carbohydrate, wait 15 minutes, re-check.",
+          "Provides a written hypoglycaemia action plan including: symptoms to recognise, what to eat/drink, when to call triple zero.",
+          "Explains the importance of regular meals and not skipping breakfast when on a sulphonylurea.",
+          "Advises Nola and Cheryl to carry glucose tablets or jelly beans at all times.",
+          "Reassures Nola: 'This episode was caused by the medication dose — not by your diabetes getting worse.'",
+          "Addresses driving: current guidance is that hypoglycaemia events must be reviewed before driving resumes; advises Nola not to drive until reviewed.",
+        ],
+      },
+      {
+        code: "1.11",
+        title: "Safety-netting and specific follow-up arrangements are made",
+        questions: [4],
+        points: [
+          "Arranges review within 48–72 hours to recheck BGL and confirm clinical stability.",
+          "Advises Cheryl on when to call an ambulance: prolonged unconsciousness, seizure, inability to swallow, BGL < 3 mmol/L not responding to oral glucose.",
+          "Provides after-hours contact information for the practice or health direct.",
+          "Schedules a formal diabetes medication review within 2 weeks — with the colleague returning from leave or with the patient's agreement to transfer ongoing care.",
+          "Documents the hypoglycaemic episode, medication change, education provided, and follow-up plan in the clinical record.",
+          "Considers a referral to a credentialled diabetes educator for structured hypoglycaemia education.",
+        ],
+      },
+      {
+        code: "1.3",
+        title: "Matches modality of communication to patient needs, health literacy and context",
+        questions: [3, 4],
+        points: [
+          "Communicates with both Nola and Cheryl — recognises that an adult daughter who is closely involved in care is an important communication partner, with Nola's consent.",
+          "Adjusts explanation style to Nola's recovery state: does not deliver complex medication education while she is still confused.",
+          "Validates Cheryl's concern about the HbA1c without undermining the previous GP.",
+          "Uses teach-back: 'Can you tell me what you will do if Nola starts shaking or becomes confused again?'",
+          "Avoids jargon — does not use terms like 'sulphonylurea' or 'HbA1c' without explanation.",
+          "Provides written materials — hypoglycaemia action card and updated medication list.",
+        ],
+      },
+    ],
+    markingRubric: [
+      { domain: "General practice systems and regulatory requirements", domainNumber: 10, code: "10.1", description: "A patient with significant illness is identified", questions: [1] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.1", description: "A comprehensive biopsychosocial history is taken", questions: [2] },
+      { domain: "Diagnosis, decision-making and reasoning", domainNumber: 3, code: "3.1", description: "Integrates and synthesises knowledge to make decisions in complex clinical situations", questions: [3] },
+      { domain: "Clinical management and therapeutic reasoning", domainNumber: 4, code: "4.8", description: "Provides effective explanations, education and choices to the patient", questions: [4] },
+      { domain: "Communication and consultation skills", domainNumber: 1, code: "1.11", description: "Safety-netting and specific follow-up arrangements are made", questions: [4] },
+      { domain: "Communication and consultation skills", domainNumber: 1, code: "1.3", description: "Matches modality of communication to patient needs, health literacy and context", questions: [3, 4] },
+    ],
+    debriefNotes: `The competent candidate immediately recognises severe hypoglycaemia and initiates the correct treatment protocol, identifying the sulphonylurea dose increase as the precipitant and understanding that gliclazide's prolonged action warrants extended observation and possible admission. They correctly apply an individualised HbA1c target for an older patient (7–8.5% range) and articulate why the previous dose escalation was inappropriate in this context, responding to Cheryl's reasonable concern without undermining the colleague. Medication review leads to reduction or substitution of the sulphonylurea with an agent carrying lower hypoglycaemia risk (DPP-4 inhibitor or cessation if glycaemia is acceptable). The consultation closes with a structured hypoglycaemia action plan, the 15-15 rule in lay language, driving advice, and a specific follow-up appointment.`,
+    patientPersona: {
+      openingStatement: "I'm not sure what happened — Cheryl brought me in. I just felt a bit off this morning, that's all.",
+      volunteerHistory: [
+        "I had some Weet-Bix this morning — I didn't feel that hungry though.",
+        "I've been feeling a bit wobbly in the mornings lately, maybe two or three times.",
+        "The new tablet dose has been making me feel sick, so I haven't been eating much.",
+      ],
+      withheldHistory: [
+        "She has been skipping her afternoon snack because she is not hungry since the dose increase.",
+        "She had a very small breakfast today — barely half a bowl of cereal.",
+        "She drove herself to the shops two days ago while feeling 'a bit funny' but did not tell anyone.",
+        "She is worried the diabetes is getting worse and has been anxious about what the blood tests mean.",
+      ],
+      ice: {
+        ideas: "She is not sure what caused the episode — she thinks she might have 'overdone it' in the garden yesterday.",
+        concerns: "She is embarrassed about worrying Cheryl and does not want to be 'a burden.' She is worried she will be told to stop driving.",
+        expectations: "She wants to feel better and go home. She is not expecting her tablets to be changed.",
+      },
+      demeanour: "Initially confused and quiet; gradually becomes more alert and apologetic. Responds warmly to reassurance. Becomes anxious when driving or independence is mentioned.",
+      responseToJargon: "Does not know what 'sulphonylurea,' 'HbA1c,' or 'hypoglycaemia' mean without explanation. Nods politely but will not understand unless plain language is used.",
+    },
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // LAPOINTE — Sophie, 32F, Thyroid Nodule / Neck Lump Assessment
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "lapointe",
+    patientName: "Sophie LAPOINTE",
+    patientAge: 32,
+    patientGender: "F",
+    presentingComplaint: "Six-week history of neck swelling noticed by partner",
+    topics: ["Thyroid Nodule", "Neck Lump", "Undifferentiated Presentation", "Ultrasound", "FNA", "Cancer Scare", "Breaking Bad News"],
+    domain: "undifferentiated",
+    difficulty: "standard",
+    icpcCode: "T – Endocrine, metabolic and nutritional",
+    year: "2025",
+    scenario: `Sophie LAPOINTE, 32 years, is a physiotherapist. She presents because her partner noticed a swelling on the right side of her neck approximately six weeks ago. Sophie initially thought it was "just a gland" but it has not resolved.
+
+She describes the swelling as non-painful. She has noticed some mild discomfort when swallowing large mouthfuls. She denies hoarseness, shortness of breath, or any change in her voice. She has not had fevers, night sweats, or weight loss. She has not noticed any other lumps.
+
+Sophie has no significant past medical history. Her mother had "a thyroid issue" treated with tablets; her father has hypertension. She is not on any regular medications. She is a non-smoker and drinks one glass of wine per week.
+
+She is clearly anxious: "My partner has been pushing me to come in. I kept hoping it would go away."`,
+    patientRecord: {
+      name: "Sophie LAPOINTE",
+      age: 32,
+      gender: "Female",
+      pronouns: "She/Her",
+      sexAssignedAtBirth: "Female",
+      indigenousStatus: "Not Aboriginal or Torres Strait Islander",
+      allergies: "Nil known",
+      medications: ["Nil regular"],
+      pastHistory: ["Nil significant"],
+      socialHistory: {
+        "Relationship": "De facto partner (4 years), no children",
+        "Occupation": "Physiotherapist — full-time private practice",
+        "Exercise": "Runs 4 times per week; otherwise well",
+        "Stress": "Reports moderate work stress but otherwise well",
+      },
+      familyHistory: ["Mother: thyroid condition — treated with tablets (details unknown)", "Father: hypertension"],
+      smoking: "Non-smoker",
+      alcohol: "1 standard drink per week",
+      immunisations: ["Up to date", "HPV vaccine completed", "COVID-19 up to date"],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "What history would you take and what examination would you perform for Sophie's presentation?",
+        timingMinutes: 4,
+        prompts: [
+          { type: "prompt", text: "What specific features of the lump would you want to know about?" },
+          { type: "prompt", text: "What systemic symptoms are important to ask about?" },
+          { type: "probe", text: "What examination of the neck would you perform and what are you looking for?" },
+        ],
+      },
+      {
+        number: 2,
+        text: "Examination reveals a smooth, firm, non-tender 2.5 cm nodule moving with swallowing at the right thyroid lobe. There is no lymphadenopathy. What are your differential diagnoses and initial investigations?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "What is the significance of a lump that moves with swallowing?" },
+          { type: "prompt", text: "What investigations would you order first, and in what sequence?" },
+          { type: "probe", text: "Sophie asks: 'Could this be cancer?' How do you respond at this point?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "TFTs are normal. Thyroid ultrasound reports: solitary right thyroid nodule, 2.8 cm, heterogeneous, with microcalcifications. No lymphadenopathy on imaging. How do you manage this result with Sophie?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "How do you interpret these ultrasound features and what do they suggest?" },
+          { type: "must-use", text: "Sophie asks: 'What does microcalcifications mean? Am I going to need surgery?' How do you respond?" },
+          { type: "prompt", text: "What is the next investigation and how do you arrange it?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "Fine needle aspiration cytology (FNAC) reports: Thy3f — follicular lesion of undetermined significance. How do you explain this result to Sophie and what is the management plan?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "What does Thy3f mean in plain terms and what are the options?" },
+          { type: "probe", text: "Sophie is very anxious and says she just wants it out. How do you counsel her?" },
+          { type: "prompt", text: "What specialist referral do you arrange and what is your safety-net plan?" },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "2.1",
+        title: "A comprehensive biopsychosocial history is taken",
+        questions: [1],
+        points: [
+          "Characterises the lump: duration, onset, rate of change, pain, associated symptoms (dysphagia, dysphonia, hoarseness, stridor, globus sensation).",
+          "Screens for thyroid dysfunction symptoms: hyperthyroidism (weight loss, palpitations, heat intolerance, tremor, diarrhoea) and hypothyroidism (weight gain, fatigue, cold intolerance, constipation, bradycardia).",
+          "Screens for malignancy red flags: unexplained weight loss, night sweats, generalised lymphadenopathy, haemoptysis.",
+          "Elicits radiation exposure history (especially childhood neck/head radiation), family history of thyroid cancer or MEN2 syndrome.",
+          "Explores the patient's ICE: what does Sophie think this is, what is she worried about, what does she expect from the visit?",
+          "Acknowledges Sophie's anxiety and validates her decision to present.",
+        ],
+      },
+      {
+        code: "2.4",
+        title: "Physical examination findings are detected accurately and interpreted correctly",
+        questions: [1, 2],
+        points: [
+          "Inspects the neck from the front — notes any visible swelling, asymmetry, skin changes.",
+          "Asks patient to swallow a sip of water and observes movement: thyroid nodule and thyroglossal cyst move with swallowing; lymph nodes do not.",
+          "Palpates the thyroid bimanually from behind: size, consistency (firm/soft/hard), surface (smooth/nodular), tenderness, movement.",
+          "Palpates all cervical and supraclavicular lymph node chains.",
+          "Assesses for tracheal deviation.",
+          "Performs a brief thyroid status examination: pulse rate/rhythm, tremor, lid lag, eye changes, reflexes.",
+          "Correctly interprets: firm, non-tender, 2.5 cm thyroid nodule moving with swallowing — most consistent with thyroid origin; must be investigated to exclude malignancy.",
+        ],
+      },
+      {
+        code: "2.6",
+        title: "Rational options for investigations are chosen using an evidence-based approach",
+        questions: [2, 3],
+        points: [
+          "First-line investigations: TFTs (TSH ± fT4) to assess thyroid function — important before FNA as a hot nodule on scintigraphy rarely requires biopsy.",
+          "Thyroid ultrasound: next step after TFTs — characterises nodule size, echogenicity, vascularity, microcalcifications, and lymph nodes.",
+          "FNA (under ultrasound guidance for accuracy): required for all nodules with suspicious ultrasound features (microcalcifications, irregular margins, taller-than-wide shape) ≥1 cm.",
+          "Does NOT order CT with contrast (iodine load) as first-line — this can interfere with subsequent nuclear medicine scanning and radioiodine treatment.",
+          "Does not order thyroid scintigraphy as the first investigation — reserved for TSH-suppressed nodules.",
+          "Correctly sequences investigations: TFT → USS → FNA if indicated.",
+        ],
+      },
+      {
+        code: "3.6",
+        title: "Formulates a rational list of differential diagnoses",
+        questions: [2],
+        points: [
+          "Most likely: solitary thyroid nodule — could be colloid cyst, follicular adenoma, or differentiated thyroid carcinoma (papillary most common).",
+          "Less likely: multinodular goitre with dominant nodule; Graves' disease with focal nodule.",
+          "Unlikely but important: medullary thyroid carcinoma (associated with MEN2, calcitonin elevation); lymphoma (usually associated with lymphadenopathy); secondaries.",
+          "Correctly identifies that microcalcifications on USS increase the probability of papillary thyroid carcinoma — a high-risk USS feature.",
+          "Notes that the Thy3f (follicular lesion of undetermined significance) result has approximately 15–30% risk of malignancy — not benign, not diagnostic of cancer.",
+        ],
+      },
+      {
+        code: "1.3",
+        title: "Matches modality of communication to patient needs, health literacy and context",
+        questions: [2, 3, 4],
+        points: [
+          "Addresses Sophie's direct question 'Could this be cancer?' honestly but without premature conclusions: 'I can't rule it out at this stage — that's why we need the tests. Most neck lumps in people your age are not cancer, but we need to investigate properly.'",
+          "Explains microcalcifications in lay language: 'Tiny calcium deposits in the gland — they can sometimes be associated with certain types of thyroid growth, which is why we're doing more tests.'",
+          "Explains Thy3f clearly: 'The biopsy found cells that look a bit unusual but aren't clearly cancer — it's an uncertain result. About 1 in 5 of these turn out to be cancer, which means we need a surgeon's opinion.'",
+          "Uses SPIKES framework for the difficult news conversation — setting, perception, invitation, knowledge, emotions, strategy.",
+          "Does not offer false reassurance ('It'll be fine') but maintains a supportive, calm tone.",
+          "Provides written information about the pathway ahead; confirms Sophie knows who to call with questions.",
+        ],
+      },
+      {
+        code: "4.7",
+        title: "A patient-centred and comprehensive management plan is developed",
+        questions: [4],
+        points: [
+          "Explains the management pathway for Thy3f: repeat FNA in 3 months OR referral to endocrine surgeon for consideration of diagnostic hemithyroidectomy — this is a shared decision.",
+          "Acknowledges Sophie's wish for 'it to be out' as a valid option (hemithyroidectomy is appropriate for a Thy3f nodule with suspicious features on USS) — does not dismiss her preference.",
+          "Explains what hemithyroidectomy involves: removal of the affected lobe; if cancer confirmed, completion thyroidectomy may follow; if benign, one lobe is sufficient.",
+          "Arranges urgent referral to endocrine surgeon with relevant investigations attached.",
+          "Discusses the role of the multidisciplinary team: endocrinology, nuclear medicine, endocrine surgery.",
+          "Safety-nets: if Sophie develops worsening dysphagia, stridor, rapid growth, or hoarseness before the surgical appointment — attend ED.",
+        ],
+      },
+    ],
+    markingRubric: [
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.1", description: "A comprehensive biopsychosocial history is taken", questions: [1] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.4", description: "Physical examination findings are detected accurately and interpreted correctly", questions: [1, 2] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.6", description: "Rational options for investigations are chosen using an evidence-based approach", questions: [2, 3] },
+      { domain: "Diagnosis, decision-making and reasoning", domainNumber: 3, code: "3.6", description: "Formulates a rational list of differential diagnoses", questions: [2] },
+      { domain: "Communication and consultation skills", domainNumber: 1, code: "1.3", description: "Matches modality of communication to patient needs, health literacy and context", questions: [2, 3, 4] },
+      { domain: "Clinical management and therapeutic reasoning", domainNumber: 4, code: "4.7", description: "A patient-centred and comprehensive management plan is developed", questions: [4] },
+    ],
+    debriefNotes: `The competent candidate takes a focused but comprehensive history distinguishing thyroid from non-thyroid neck lumps and screening for malignancy red flags, radiation exposure, and thyroid dysfunction symptoms. Examination correctly identifies a thyroid nodule by virtue of its movement with swallowing. Investigations are sequenced appropriately: TFTs first, then USS, then FNA — with no unnecessary CT with contrast. Ultrasound microcalcifications are correctly flagged as suspicious for papillary thyroid carcinoma. The Thy3f result is explained to Sophie with honesty, in lay terms, and without false reassurance — acknowledging the approximately 15–30% malignancy risk and explaining the options (repeat FNA vs surgical referral). Sophie's preference for surgery is validated and managed via urgent endocrine surgeon referral, with red-flag safety-netting before the appointment.`,
+    patientPersona: {
+      openingStatement: "My partner kept pestering me to come in, so here I am. It's probably nothing — it doesn't even hurt.",
+      volunteerHistory: [
+        "It's been there about six weeks, maybe a bit longer.",
+        "It's on the right side. My partner noticed it — I hadn't really felt it myself.",
+        "I do get a slight funny feeling when I eat, like something is in the way. Nothing major.",
+      ],
+      withheldHistory: [
+        "She has noticed she feels warmer than usual and has been having occasional palpitations but attributes this to work stress.",
+        "Her mother had thyroid cancer — she does not know the type — but Sophie has not mentioned this because she is frightened to think about it.",
+        "She has been googling 'neck lump' at 2am and found information about thyroid cancer that has been scaring her.",
+        "She nearly cancelled the appointment twice.",
+      ],
+      ice: {
+        ideas: "She is hoping it is a swollen lymph node from a past cold. She has been trying not to think about the worst case.",
+        concerns: "She is frightened it could be cancer. She is worried about her career — as a physio she cannot afford time off work.",
+        expectations: "She wants the doctor to examine her, tell her what it is, and reassure her. She is braced for bad news but hopes she won't hear it.",
+      },
+      demeanour: "Tries to appear calm and casual but becomes visibly anxious when cancer or surgery is mentioned. Responds well to honest, measured communication. Does not want to be told 'not to worry.'",
+      responseToJargon: "As a physiotherapist she has some health literacy but thyroid medicine is unfamiliar. She will ask for clarification if confused. Terms like 'microcalcifications,' 'FNA,' and 'Thy3f' need clear plain-language explanation.",
+    },
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // CHAMBERS — Robert, 61M, T2DM Quarterly Review + Insulin Initiation
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "chambers",
+    patientName: "Robert CHAMBERS",
+    patientAge: 61,
+    patientGender: "M",
+    presentingComplaint: "Quarterly diabetes check-up — HbA1c has risen further despite recent medication intensification",
+    topics: ["Type 2 Diabetes", "Insulin Initiation", "Chronic Disease Management", "Medication Adherence", "Peripheral Neuropathy", "Patient Barriers"],
+    domain: "chronic_disease",
+    difficulty: "challenging",
+    icpcCode: "T – Endocrine, metabolic and nutritional",
+    year: "2025",
+    scenario: `You are a GP in a suburban practice. Robert CHAMBERS, 61 years, a self-employed plumber, has a scheduled quarterly diabetes check-up. You have been his GP for the past 18 years.
+
+Robert was diagnosed with type 2 diabetes 10 years ago. His hypertension was diagnosed 7 years ago. He has been on metformin 1000 mg twice daily and ramipril 5 mg daily for several years. Six months ago, you added empagliflozin 10 mg daily after his HbA1c reached 8.6% (70 mmol/mol).
+
+Today's results:
+• HbA1c: 9.4% (79 mmol/mol) — up from 8.6% at the last review
+• Fasting glucose: 12.1 mmol/L
+• eGFR: 58 mL/min/1.73m² (down from 67 six months ago)
+• Urinary ACR: 4.2 mg/mmol (previously 2.1 mg/mmol) — now in microalbuminuria range
+• LDL: 2.9 mmol/L (target < 1.8 mmol/L for high CVD risk)
+• Blood pressure today: 148/92 mmHg (target < 130/80)
+• Weight: 97 kg (BMI 31.4) — gained 4 kg in 6 months
+
+Robert arrives looking tired. He mentions his feet have been "tingling and burning at night" for a few weeks. He has been divorced for two years and lives alone.`,
+    patientRecord: {
+      name: "Robert CHAMBERS",
+      age: 61,
+      gender: "Male",
+      pronouns: "He/Him",
+      sexAssignedAtBirth: "Male",
+      indigenousStatus: "Not Aboriginal or Torres Strait Islander",
+      allergies: "Nil known",
+      medications: [
+        "Metformin 1000 mg twice daily",
+        "Empagliflozin 10 mg once daily (added 6 months ago)",
+        "Ramipril 5 mg once daily",
+        "Aspirin 100 mg once daily",
+      ],
+      pastHistory: [
+        "10 years ago: Type 2 diabetes mellitus",
+        "7 years ago: Hypertension",
+        "4 years ago: Dyslipidaemia — commenced rosuvastatin; ceased by patient after 3 months ('made my legs ache')",
+        "2 years ago: Separation and divorce — Robert described this as the most stressful period of his life",
+      ],
+      socialHistory: {
+        "Living situation": "Lives alone since divorce 2 years ago; two adult children (interstate)",
+        "Occupation": "Self-employed plumber; physically demanding work, irregular hours",
+        "Diet": "Takeaway food 4–5 nights per week; skips breakfast most days",
+        "Exercise": "Work is physically active but no formal exercise; sedentary evenings",
+        "Monitoring": "Has a glucometer but 'rarely uses it'",
+      },
+      familyHistory: [
+        "Father: Type 2 diabetes, died of myocardial infarction age 66",
+        "Mother: Stroke age 70, currently in residential aged care",
+      ],
+      smoking: "Ex-smoker — ceased 5 years ago (25 pack-years)",
+      alcohol: "10–15 standard drinks per week (mostly beer; increased since divorce)",
+      immunisations: ["Influenza (annual)", "COVID-19 up to date", "Pneumococcal (PCV20, 3 years ago)"],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "Summarise the key clinical concerns arising from today's results and Robert's overall diabetes trajectory.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "What is the significance of the HbA1c rise despite medication intensification?" },
+          { type: "probe", text: "How do you interpret the eGFR decline alongside the new microalbuminuria?" },
+          { type: "prompt", text: "What does the LDL of 2.9 mmol/L mean for Robert's absolute cardiovascular risk?" },
+        ],
+      },
+      {
+        number: 2,
+        text: "What further history and examination would you perform at this visit?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "How would you assess the tingling and burning in his feet?" },
+          { type: "prompt", text: "What psychosocial factors might be contributing to his deteriorating control?" },
+          { type: "probe", text: "Robert reveals he stopped taking empagliflozin three months ago because 'it was giving me a rash.' How does this change the picture?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "You discuss intensifying treatment, including starting insulin. Robert becomes visibly uncomfortable and says: 'My dad went on insulin and died six months later. I'm not going on that.' How do you manage this conversation?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "must-use", text: "Robert says: 'Insulin means you've failed, doesn't it?' How do you respond?" },
+          { type: "prompt", text: "What are the clinical indications for insulin at this stage of Robert's T2DM?" },
+          { type: "probe", text: "Robert asks about the GLP-1 injection instead of insulin. How do you compare the options?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "Robert reluctantly agrees to 'try something.' Outline your comprehensive management plan, including all active clinical issues.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "Which issues need to be addressed urgently at this visit and which at follow-up?" },
+          { type: "prompt", text: "What referrals and allied health services would you organise?" },
+          { type: "probe", text: "Robert's eGFR is 58 and has dropped 9 points in 6 months. When would you refer to nephrology?" },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "3.1",
+        title: "Integrates and synthesises knowledge to make decisions in complex clinical situations",
+        questions: [1, 3],
+        points: [
+          "Synthesises the multiple deteriorating parameters: HbA1c rise despite three-agent therapy, eGFR decline, new microalbuminuria, LDL above high-CVD-risk target, BP above target, weight gain — represents progressive end-organ damage.",
+          "Recognises that HbA1c 9.4% in a patient already on three agents (metformin, SGLT2i, ramipril) who is not adhering to empagliflozin represents inadequate glycaemic control requiring treatment escalation.",
+          "Identifies absolute CVD risk as very high: T2DM + hypertension + dyslipidaemia + microalbuminuria + ex-smoker + family history (father MI at 66).",
+          "Correctly applies the clinical indication for insulin: HbA1c ≥ 9% with symptoms of hyperglycaemia (polyuria, polydipsia, fatigue) or failure of oral agents — this patient meets both.",
+          "Understands that GLP-1 agonist (e.g. semaglutide) is a valid alternative to insulin in this context: significant HbA1c reduction, proven CV benefit, weight loss — particularly relevant given BMI 31.4.",
+          "Addresses the SGLT2i cessation: confirms the empagliflozin 'rash' (could be genital mycotic infection — a known side effect, not a true allergy) — clarifies this before abandoning the drug class.",
+        ],
+      },
+      {
+        code: "2.1",
+        title: "A comprehensive biopsychosocial history is taken",
+        questions: [2],
+        points: [
+          "Assesses peripheral neuropathy symptoms: character (burning, tingling, shooting), distribution (stocking/glove vs focal), timing (worse at night), impact on sleep and function.",
+          "Explores medication adherence in detail: when was empagliflozin stopped, why, was it a true rash or genital itch (mycotic infection).",
+          "Explores psychosocial context: living alone since divorce, social isolation, alcohol use increase — these are directly contributing to dietary deterioration and non-adherence.",
+          "Screens for depression: PHQ-2 or equivalent — social isolation + weight gain + fatigue in a recently divorced man warrants screening.",
+          "Reviews self-monitoring behaviour: how often does he check BGL, does he know his targets?",
+          "Assesses alcohol intake accurately: 10–15 standard drinks per week significantly above low-risk guidelines; may be contributing to caloric excess and liver impact.",
+        ],
+      },
+      {
+        code: "2.4",
+        title: "Physical examination findings are detected accurately and interpreted correctly",
+        questions: [2],
+        points: [
+          "Peripheral neuropathy examination: 10-g Semmes-Weinstein monofilament (protective sensation), vibration sense (128 Hz tuning fork at medial malleolus), light touch, ankle reflexes.",
+          "Foot inspection: skin integrity, calluses, ulcers, fissures, nail changes (fungal), interdigital spaces.",
+          "Peripheral vascular assessment: foot pulses (dorsalis pedis, posterior tibial), capillary refill.",
+          "Blood pressure: confirms hypertension — measures in both arms, confirms orthostatic component if dizziness present.",
+          "Abdominal examination: does not miss hepatomegaly given alcohol intake and NAFLD risk.",
+          "BMI and waist circumference.",
+        ],
+      },
+      {
+        code: "1.10",
+        title: "Prioritises problems, attending to both the patient's and the doctor's agendas",
+        questions: [3],
+        points: [
+          "Addresses Robert's belief that 'insulin equals failure' directly and compassionately: 'Starting insulin is not a failure — it's a normal part of how type 2 diabetes progresses over time. The cells that make insulin just get tired; the insulin itself hasn't changed.'",
+          "Explores the emotional context of his father's death: 'It sounds like losing your dad when he was on insulin has made this really frightening for you. That must have been hard to carry all this time.'",
+          "Distinguishes between his father's situation (possibly complications of years of poor control, not insulin itself) and Robert's current situation.",
+          "Presents insulin and GLP-1 agonist as parallel options — allows Robert to have agency in the decision.",
+          "Does not dismiss his reluctance or override it — uses motivational interviewing to explore what would make him willing to try.",
+          "Confirms that insulin does not cause the complications — uncontrolled hyperglycaemia does.",
+        ],
+      },
+      {
+        code: "4.4",
+        title: "Outlines and justifies the therapeutic options selected",
+        questions: [4],
+        points: [
+          "Glycaemic intensification: if choosing GLP-1 agonist — semaglutide 0.25 mg weekly SC (ramp up to 1 mg); proven CVD and renal benefit, significant HbA1c and weight reduction. If choosing insulin — basal insulin (insulin glargine 10 units nocte, titrate by 2 units every 3 days to FBG target 4–7 mmol/L).",
+          "Investigates and potentially reinstates SGLT2i if empagliflozin rash was mycotic infection (clotrimazole cream, then re-challenge) — proven cardiorenal benefit especially given microalbuminuria.",
+          "Blood pressure: increase ramipril to 10 mg OR add amlodipine — target < 130/80 in diabetes with microalbuminuria.",
+          "Dyslipidaemia: restart statin — rosuvastatin caused myalgia; try low-dose pravastatin or atorvastatin, and reassess myalgia claim. LDL target < 1.8 mmol/L for very high CVD risk.",
+          "Peripheral neuropathy: if confirmed — pregabalin or duloxetine for symptom management; address glycaemic control as the underlying driver.",
+          "Nephrology referral threshold: progressive CKD (eGFR drop > 5 mL/min/year) — this patient has dropped 9 points in 6 months; referral is appropriate now.",
+          "Address alcohol: AUDIT-C; brief intervention; if AUDIT ≥ 8, formal alcohol counselling — alcohol is contributing to caloric excess, HbA1c elevation, and probable NAFLD.",
+        ],
+      },
+      {
+        code: "5.3",
+        title: "Coordinates a team-based approach to patient care",
+        questions: [4],
+        points: [
+          "Diabetes nurse educator / credentialled diabetes educator: insulin initiation training, SMBG technique, dietary review.",
+          "Dietitian: structured plan for shift-worker / irregular meal pattern, alcohol reduction.",
+          "Podiatrist: annual diabetic foot assessment given neuropathy symptoms.",
+          "Ophthalmology / optometry: annual diabetic retinopathy screen — check if up to date.",
+          "Nephrology: referral given rapidly progressive CKD (drop of 9 mL/min in 6 months).",
+          "Psychology or counselling: social isolation, low mood, relationship adjustment post-divorce.",
+          "GPMP and Team Care Arrangement (TCA): establishes Medicare-funded access to five allied health visits.",
+        ],
+      },
+    ],
+    markingRubric: [
+      { domain: "Diagnosis, decision-making and reasoning", domainNumber: 3, code: "3.1", description: "Integrates and synthesises knowledge to make decisions in complex clinical situations", questions: [1, 3] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.1", description: "A comprehensive biopsychosocial history is taken", questions: [2] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.4", description: "Physical examination findings are detected accurately and interpreted correctly", questions: [2] },
+      { domain: "Communication and consultation skills", domainNumber: 1, code: "1.10", description: "Prioritises problems, attending to both the patient's and the doctor's agendas", questions: [3] },
+      { domain: "Clinical management and therapeutic reasoning", domainNumber: 4, code: "4.4", description: "Outlines and justifies the therapeutic options selected", questions: [4] },
+      { domain: "Preventive and population health", domainNumber: 5, code: "5.3", description: "Coordinates a team-based approach to patient care", questions: [4] },
+    ],
+    debriefNotes: `The competent candidate synthesises a picture of progressive multi-organ diabetes complications: HbA1c rising despite triple therapy (partly explained by covert empagliflozin cessation), new microalbuminuria with declining eGFR at a rate warranting nephrology referral, LDL well above target, BP above target, and symptomatic peripheral neuropathy. They uncover the psychosocial contributors — social isolation, dietary deterioration, increased alcohol, depression screen — and address Robert's deeply held belief that insulin caused his father's death with empathy and accurate re-framing. The plan addresses all active issues in priority order: glycaemic intensification (insulin or GLP-1 agonist as a shared decision), BP and LDL intensification, statin re-challenge, SGLT2i review, neuropathy management, nephrology referral, and a GPMP/TCA for allied health.`,
+    patientPersona: {
+      openingStatement: "Here for my usual check-up. I know the numbers aren't going to be great — just tell me what I need to know.",
+      volunteerHistory: [
+        "My feet have been playing up — burning and tingling at night. Mostly the right one but both sometimes.",
+        "I've been flat out at work. Not sleeping great.",
+        "Since the divorce I've been eating on the run a lot. It's just easier.",
+      ],
+      withheldHistory: [
+        "He stopped the empagliflozin 3 months ago because of uncomfortable itching 'down there' — he was embarrassed to mention it and just stopped without telling anyone.",
+        "He is drinking more than he has admitted — usually a six-pack on weeknights and more on weekends.",
+        "He has been feeling low — some days he does not leave the house on weekends. He has not connected this to depression.",
+        "He has been deliberately not checking his blood sugar because 'I don't want to know.'",
+        "He is frightened about insulin because his father was started on insulin shortly before dying of a stroke — he privately believes insulin caused it.",
+      ],
+      ice: {
+        ideas: "He believes the tablets are not working and that he is 'heading the same way as dad.' He has some fatalism about his prognosis but has not expressed it.",
+        concerns: "He is scared of insulin. He is also embarrassed about his weight gain and that things have 'got worse' on his watch.",
+        expectations: "He wants the doctor to be straight with him. He does not want to be lectured about diet again. He will engage if respected.",
+      },
+      demeanour: "Matter-of-fact but guarded. Opens up when the doctor engages with the personal context (divorce, loneliness). Becomes emotional when his father is mentioned — this is the key unlocking moment. Responds well to being treated as a capable adult.",
+      responseToJargon: "Reasonably health literate after 10 years with the condition — knows terms like HbA1c, metformin, blood pressure. Does not know what microalbuminuria or eGFR mean without explanation.",
+    },
+  },
 ];
 
 export function getCaseById(id: string): Case | undefined {
