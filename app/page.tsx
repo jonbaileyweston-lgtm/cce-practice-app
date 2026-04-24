@@ -121,7 +121,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm text-blue-800">
             <div className="flex items-start gap-2">
               <span className="bg-blue-200 text-blue-900 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
-              <span>Pick a case and read the 2-minute candidate brief</span>
+              <span>Pick a case and read the 5-minute candidate brief</span>
             </div>
             <div className="flex items-start gap-2">
               <span className="bg-blue-200 text-blue-900 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
@@ -129,7 +129,7 @@ export default function Home() {
             </div>
             <div className="flex items-start gap-2">
               <span className="bg-blue-200 text-blue-900 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
-              <span>Complete all questions within 10 minutes</span>
+              <span>Complete all questions within 15 minutes</span>
             </div>
             <div className="flex items-start gap-2">
               <span className="bg-blue-200 text-blue-900 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</span>

@@ -29,8 +29,8 @@ type SimPhase =
   | "report";
 
 const BREAK_SECONDS = 2 * 60;
-const READING_SECONDS = 2 * 60;
-const TOTAL_EXAM_SECONDS = 10 * 60;
+const READING_SECONDS = 5 * 60;
+const TOTAL_EXAM_SECONDS = 15 * 60;
 const WARNING_AT = TOTAL_EXAM_SECONDS - 120;
 
 export default function ExamSimRunnerPage({

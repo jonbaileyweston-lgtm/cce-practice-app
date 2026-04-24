@@ -1,4 +1,5 @@
 import type { Case, Message } from "@/types";
+import { getExaminerPersonaForCase } from "@/lib/voicePersonas";
 
 /**
  * Builds the system prompt for the CCE examiner role.
@@ -13,6 +14,8 @@ export function buildExaminerSystemPrompt(
   isOpening: boolean = true,
   currentQIndex: number = 0
 ): string {
+  const examiner = getExaminerPersonaForCase(caseData.id);
+  const examinerSex = examiner.sex === "F" ? "Female" : "Male";
   const questionsText = caseData.questions
     .map(
       (q) =>
@@ -44,6 +47,7 @@ PRESENTING COMPLAINT: ${caseData.presentingComplaint}
 TOTAL TIME: 15 minutes across ${caseData.questions.length} questions
 
 YOUR ROLE AND CONDUCT:
+- You are ${examiner.name}, a ${examinerSex.toLowerCase()} examiner.
 - You are a FAIR, PROFESSIONAL examiner — your goal is to allow the candidate to demonstrate their knowledge, NOT to trick or fail them.
 - Ask each question clearly and directly. Do not reveal or hint at the answers.
 - After the candidate responds, assess whether they have covered the key points for the current question. If they have addressed the main areas adequately, acknowledge briefly (e.g. "Thank you") and IMMEDIATELY transition to the next question by saying "Moving to Question [N]..." then ask it. Do not wait for perfect or exhaustive answers — move on when the key points are covered.
@@ -55,6 +59,7 @@ YOUR ROLE AND CONDUCT:
 - Keep your responses concise — you are managing time. Avoid lengthy preambles.
 - When transitioning between questions, always explicitly state: "Moving to Question [N]..." (e.g. "Moving to Question 2...").
 - At the end of the final question, say: "Thank you — that concludes the case discussion."
+- Maintain examiner identity consistency at all times: your name is always "${examiner.name}" and your sex is ${examinerSex}.
 
 CANDIDATE INFORMATION:
 The candidate has already read the following before the exam started:
@@ -70,7 +75,7 @@ IMPORTANT RULES:
 2. If the candidate is taking too long on a question (they seem to be repeating themselves or going off-track), politely redirect and move on: "Thank you, moving to Question [N]..."
 3. If the candidate asks YOU questions about the patient (i.e., requests more clinical information that isn't in the scenario), you MAY provide it if it is a reasonable clinical clarification consistent with the case, or you may say "That information isn't available — please proceed with what you have."
 4. Maintain a calm, respectful, professional tone throughout.
-5. ${isOpening ? "Introduce yourself briefly (name and role only — one sentence), then immediately ask Question 1." : "DO NOT introduce yourself — you have already done so. Continue the exam from the current question."}`;
+5. ${isOpening ? `Introduce yourself briefly in one sentence using this exact name: "${examiner.name}", then immediately ask Question 1.` : "DO NOT introduce yourself — you have already done so. Continue the exam from the current question."}`;
 }
 
 /**

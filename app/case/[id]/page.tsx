@@ -7,7 +7,7 @@ import { getCaseById } from "@/data/cases";
 import { notFound } from "next/navigation";
 import { getCandidatePrepBody } from "@/lib/candidatePrep";
 
-const READING_SECONDS = 2 * 60; // 2 minutes — matches real CCE format
+const READING_SECONDS = 5 * 60; // 5 minutes reading time
 
 type PracticeMode = "discussion" | "consultation";
 
@@ -236,7 +236,7 @@ export default function CasePrepPage({
               onClick={handleStart}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-sm transition-colors text-base"
             >
-              Start 10-minute exam →
+              Start 15-minute exam →
             </button>
           ) : (
             <p className="text-slate-500 text-sm">
@@ -255,7 +255,7 @@ export default function CasePrepPage({
           )}
           {!isReady && (
             <p className="text-xs text-slate-400">
-              Allow microphone access when you start. Total exam time is 10 minutes.
+              Allow microphone access when you start. Total exam time is 15 minutes.
             </p>
           )}
         </div>

@@ -27,15 +27,20 @@ cd cce-practice-app
 npm install
 ```
 
-### 2. Add your Anthropic API key
+### 2. Add your API keys
 
 Edit `.env.local` in the `cce-practice-app` folder:
 
 ```
 ANTHROPIC_API_KEY=sk-ant-your-key-here
+OPENAI_API_KEY=sk-proj-your-key-here
+ELEVENLABS_API_KEY=sk_your_elevenlabs_key_here
 ```
 
-Get your key at https://console.anthropic.com/
+Get your keys at:
+- Anthropic: https://console.anthropic.com/
+- OpenAI: https://platform.openai.com/api-keys
+- ElevenLabs: https://elevenlabs.io/app/settings/api-keys
 
 ### 3. Start the app
 

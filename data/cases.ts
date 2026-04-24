@@ -1,4 +1,5 @@
 import type { Case } from "@/types";
+import { validateCaseGenderConsistency } from "@/lib/voicePersonas";
 
 export const CASES: Case[] = [
   // ───────────────────────────────────────────────────────────────────────────
@@ -3637,6 +3638,8 @@ Robert arrives looking tired. He mentions his feet have been "tingling and burni
     },
   },
 ];
+
+validateCaseGenderConsistency(CASES);
 
 export function getCaseById(id: string): Case | undefined {
   return CASES.find((c) => c.id === id);

@@ -43,9 +43,10 @@ import { useWhisperSTT } from "@/hooks/useWhisperSTT";
 import { useOpenAITTS } from "@/hooks/useOpenAITTS";
 import Timer from "@/components/Timer";
 import type { Message } from "@/types";
+import { getExaminerPersonaForCase } from "@/lib/voicePersonas";
 
-const TOTAL_EXAM_SECONDS = 10 * 60; // 10 minutes — matches real CCE station length
-const WARNING_THRESHOLD = TOTAL_EXAM_SECONDS - 120; // 8 min elapsed → 2 min left
+const TOTAL_EXAM_SECONDS = 15 * 60; // 15 minutes case discussion
+const WARNING_THRESHOLD = TOTAL_EXAM_SECONDS - 120; // 2 min remaining warning
 const AUTOSAVE_KEY = (id: string) => `cce-autosave-${id}`;
 
 interface AutosaveData {
@@ -66,6 +67,7 @@ export default function ExamPage({
   const router = useRouter();
 
   if (!caseData) notFound();
+  const examinerPersona = getExaminerPersonaForCase(caseData.id);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -328,7 +330,7 @@ export default function ExamPage({
                       extractCompleteSentences(sentenceBuffer);
                     if (toSpeak) {
                       const cleaned = cleanExaminerText(toSpeak);
-                      if (cleaned) enqueue(cleaned, "examiner");
+                      if (cleaned) enqueue(cleaned, examinerPersona.speakerRole);
                       sentenceBuffer = remaining;
                     }
                   }
@@ -343,7 +345,7 @@ export default function ExamPage({
         // Flush any sentence fragment that didn't end with a boundary
         if (sentenceBuffer.trim() && !isTimeUpRef.current) {
           const cleaned = cleanExaminerText(sentenceBuffer);
-          if (cleaned) enqueue(cleaned, "examiner");
+          if (cleaned) enqueue(cleaned, examinerPersona.speakerRole);
         }
 
         setIsExaminerTyping(false);
@@ -390,7 +392,7 @@ export default function ExamPage({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id, enqueue]
+    [id, enqueue, examinerPersona.speakerRole]
   );
 
   const startExam = async () => {
@@ -605,7 +607,7 @@ export default function ExamPage({
       {/* TTS fallback notice */}
       {isTTSFallback && (
         <div className="bg-slate-700 border-b border-slate-600 text-slate-300 text-xs px-4 py-1.5 text-center flex-shrink-0">
-          Using device audio (OpenAI TTS unavailable)
+          Using device audio (ElevenLabs TTS unavailable)
         </div>
       )}
 
@@ -667,7 +669,7 @@ export default function ExamPage({
               </h2>
               <p className="text-slate-400 mb-6 text-sm max-w-sm mx-auto">
                 The AI examiner will ask you {caseData.questions.length} questions.
-                The 10-minute timer starts when you speak your first answer.
+                The 15-minute timer starts when you speak your first answer.
               </p>
               <button
                 onClick={startExam}

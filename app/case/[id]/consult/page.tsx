@@ -28,8 +28,9 @@ import { useWhisperSTT } from "@/hooks/useWhisperSTT";
 import { useOpenAITTS } from "@/hooks/useOpenAITTS";
 import Timer from "@/components/Timer";
 import type { Message } from "@/types";
+import { getPatientSpeakerRole } from "@/lib/voicePersonas";
 
-const TOTAL_CONSULT_SECONDS = 10 * 60;
+const TOTAL_CONSULT_SECONDS = 15 * 60;
 const WARNING_THRESHOLD = TOTAL_CONSULT_SECONDS - 120;
 
 export default function ConsultPage({
@@ -74,8 +75,7 @@ export default function ConsultPage({
   const hasPlayedWarningRef = useRef(false);
   const isTimeUpRef = useRef(false);
 
-  const voiceRole =
-    caseData.patientGender === "M" ? "patient_male" : "patient_female";
+  const voiceRole = getPatientSpeakerRole(caseData.patientGender);
 
   const { speak, enqueue, stop: stopSpeaking, isSpeaking } = useOpenAITTS({
     onFallbackActive: () => setIsTTSFallback(true),
@@ -345,7 +345,7 @@ export default function ConsultPage({
 
       {isTTSFallback && (
         <div className="bg-slate-700 border-b border-slate-600 text-slate-300 text-xs px-4 py-1.5 text-center flex-shrink-0">
-          Using device audio (OpenAI TTS unavailable)
+          Using device audio (ElevenLabs TTS unavailable)
         </div>
       )}
 
@@ -383,7 +383,7 @@ export default function ConsultPage({
               <h2 className="text-xl font-semibold text-white mb-2">Ready to consult?</h2>
               <p className="text-slate-400 mb-1 text-sm max-w-sm mx-auto">
                 You will consult directly with the AI patient.
-                The 10-minute timer starts when you speak your first word.
+                The 15-minute timer starts when you speak your first word.
               </p>
               <p className="text-slate-500 text-xs mb-6 max-w-xs mx-auto">
                 {caseData.patientPersona?.openingStatement}

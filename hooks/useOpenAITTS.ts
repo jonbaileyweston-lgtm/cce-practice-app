@@ -2,10 +2,40 @@
 
 import { useState, useRef, useCallback } from "react";
 
-export type SpeakerRole = "examiner" | "patient_male" | "patient_female";
+export type SpeakerRole =
+  | "examiner"
+  | "examiner_male"
+  | "examiner_female"
+  | "patient_male"
+  | "patient_female";
+
+const VOICE_ID_BY_ROLE: Record<SpeakerRole, string> = {
+  examiner: "YCxeyFA0G7yTk6Wuv2oq",
+  examiner_male: "YCxeyFA0G7yTk6Wuv2oq",
+  examiner_female: "8WaMCGQzWsKvf7sGPqjE",
+  patient_male: "1IthILLNX448pH19aMvC",
+  patient_female: "luVEyhT3CocLZaLBps8v",
+};
+
+// Tune these by ear to match perceived loudness across voices
+const VOICE_GAIN: Record<string, number> = {
+  YCxeyFA0G7yTk6Wuv2oq: 1.0,
+  "8WaMCGQzWsKvf7sGPqjE": 1.0,
+  "1IthILLNX448pH19aMvC": 1.0,
+  luVEyhT3CocLZaLBps8v: 1.0,
+};
+
+let sharedAudioContext: AudioContext | null = null;
+
+function getSharedAudioContext(): AudioContext {
+  if (!sharedAudioContext || sharedAudioContext.state === "closed") {
+    sharedAudioContext = new AudioContext();
+  }
+  return sharedAudioContext;
+}
 
 interface UseOpenAITTSOptions {
-  /** Called once when OpenAI TTS fails and the hook switches to browser TTS */
+  /** Called once when API TTS fails and the hook switches to browser TTS */
   onFallbackActive?: () => void;
 }
 
@@ -28,7 +58,6 @@ export function useOpenAITTS(
 ): UseOpenAITTSReturn {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const useFallbackRef = useRef(false);
@@ -63,7 +92,7 @@ export function useOpenAITTS(
     }
   };
 
-  // --- play one item (OpenAI TTS, with browser fallback) -----------------
+  // --- play one item (API TTS, with browser fallback) --------------------
   doPlayRef.current = (text: string, role: SpeakerRole) => {
     if (!text.trim()) {
       doPlayNextRef.current();
@@ -93,7 +122,7 @@ export function useOpenAITTS(
       return;
     }
 
-    // --- OpenAI TTS ---
+    // --- Server TTS ---
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
@@ -111,21 +140,19 @@ export function useOpenAITTS(
         const arrayBuffer = await res.arrayBuffer();
         if (controller.signal.aborted) return;
 
-        if (
-          !audioContextRef.current ||
-          audioContextRef.current.state === "closed"
-        ) {
-          audioContextRef.current = new AudioContext();
-        }
-        const audioContext = audioContextRef.current;
+        const audioContext = getSharedAudioContext();
         if (audioContext.state === "suspended") await audioContext.resume();
 
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         if (controller.signal.aborted) return;
 
         const source = audioContext.createBufferSource();
+        const gainNode = audioContext.createGain();
+        const voiceId = VOICE_ID_BY_ROLE[role];
+        gainNode.gain.value = VOICE_GAIN[voiceId] ?? 1.0;
         source.buffer = audioBuffer;
-        source.connect(audioContext.destination);
+        source.connect(gainNode);
+        gainNode.connect(audioContext.destination);
         sourceNodeRef.current = source;
 
         source.onended = () => {

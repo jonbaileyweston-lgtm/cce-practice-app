@@ -197,7 +197,7 @@ export default function ResultsPage({
                 <span className={result.durationSeconds > 540 ? "text-amber-600" : "text-slate-900"}>
                   {formatDuration(result.durationSeconds)}
                 </span>
-                {" "}of 10 minutes
+                {" "}of 15 minutes
               </span>
             )}
           </div>
