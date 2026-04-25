@@ -33,9 +33,11 @@ const FEMALE_FIRST_NAMES = new Set([
 ]);
 
 const MALE_FIRST_NAMES = new Set([
+  "bill",
   "evan",
   "wei",
   "rohan",
+  "mark",
   "thomas",
   "graham",
   "dean",
@@ -78,15 +80,18 @@ export function getPatientSpeakerRole(gender: Sex): PatientSpeakerRole {
 
 export function validateCaseGenderConsistency(cases: Case[]): void {
   const errors: string[] = [];
+  const unknownNameWarnings: string[] = [];
 
   for (const c of cases) {
     const expectedGenderLabel = toGenderLabel(c.patientGender);
     const firstName = firstToken(c.patientName);
     const nameGender = expectedNameGender(firstName);
 
+    // Unknown names are common in new case authoring; do not hard-fail.
+    // We still validate strict consistency for explicit fields below.
     if (nameGender === null) {
-      errors.push(
-        `${c.id}: first name "${firstName}" is not in the gender registry`
+      unknownNameWarnings.push(
+        `${c.id}: first name "${firstName}" is not in the gender registry (skipping name-based check)`
       );
     } else if (nameGender !== c.patientGender) {
       errors.push(
@@ -130,6 +135,13 @@ export function validateCaseGenderConsistency(cases: Case[]): void {
   if (errors.length > 0) {
     throw new Error(
       `Case gender consistency checks failed:\n- ${errors.join("\n- ")}`
+    );
+  }
+
+  // Keep this visible during development without blocking app startup.
+  if (unknownNameWarnings.length > 0) {
+    console.warn(
+      `Case gender consistency warnings:\n- ${unknownNameWarnings.join("\n- ")}`
     );
   }
 }

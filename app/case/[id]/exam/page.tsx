@@ -78,7 +78,6 @@ export default function ExamPage({
   const [isTimerStarted, setIsTimerStarted] = useState(false);
   const [isExamEnded, setIsExamEnded] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
-  const [hasShownWarning, setHasShownWarning] = useState(false);
 
   const [isExaminerTyping, setIsExaminerTyping] = useState(false);
   /** Live text from the examiner stream; null when not streaming */
@@ -106,20 +105,16 @@ export default function ExamPage({
   const hasPlayedWarningRef = useRef(false);
   const isTimeUpRef = useRef(false);
 
-  const { speak, enqueue, stop: stopSpeaking, isSpeaking } = useOpenAITTS({
+  const { enqueue, stop: stopSpeaking, isSpeaking } = useOpenAITTS({
     onFallbackActive: () => setIsTTSFallback(true),
   });
 
-  const handleFinalTranscript = useCallback(
-    (transcript: string) => {
-      if (!transcript.trim() || isSubmitting) return;
-      setInterimText("");
-      setGarbledWarning(null);
-      submitCandidateMessage(transcript.trim());
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSubmitting]
-  );
+  const handleFinalTranscript = (transcript: string) => {
+    if (!transcript.trim() || isSubmitting) return;
+    setInterimText("");
+    setGarbledWarning(null);
+    submitCandidateMessage(transcript.trim());
+  };
 
   const handleGarbledTranscript = useCallback((warning: string) => {
     setGarbledWarning(warning);
@@ -166,8 +161,7 @@ export default function ExamPage({
     } catch {
       // ignore
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [id]);
 
   // Timer — only runs after candidate first speaks
   useEffect(() => {
@@ -181,7 +175,6 @@ export default function ExamPage({
       // 2-minute warning beep
       if (elapsed >= WARNING_THRESHOLD && !hasPlayedWarningRef.current) {
         hasPlayedWarningRef.current = true;
-        setHasShownWarning(true);
         playWarningBeep();
       }
 
@@ -196,7 +189,6 @@ export default function ExamPage({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimerStarted, isExamEnded]);
 
   // Auto-save every 30 seconds
@@ -239,7 +231,7 @@ export default function ExamPage({
     setMessages(msgs);
 
     streamExaminerResponse(msgs, currentQIndexRef.current).finally(() => {
-      setTimeout(() => handleExamEnd("time"), 3000);
+      setTimeout(() => handleExamEnd(), 3000);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimeUp]);
@@ -381,7 +373,7 @@ export default function ExamPage({
             fullText.toLowerCase().includes("concludes the case") ||
             fullText.toLowerCase().includes("that concludes")
           ) {
-            setTimeout(() => handleExamEnd("complete"), 2000);
+            setTimeout(() => handleExamEnd(), 2000);
           }
         }
       } catch (err) {
@@ -461,7 +453,7 @@ export default function ExamPage({
   const handleNextQuestion = async () => {
     const nextIndex = currentQIndexRef.current + 1;
     if (nextIndex >= caseData!.questions.length) {
-      handleExamEnd("complete");
+      handleExamEnd();
       return;
     }
 
@@ -481,7 +473,7 @@ export default function ExamPage({
     await streamExaminerResponse(newMessages, nextIndex);
   };
 
-  const handleExamEnd = async (reason: "complete" | "time" | "manual") => {
+  const handleExamEnd = async () => {
     if (isExamEnded) return;
     setIsExamEnded(true);
     stopSpeaking();
@@ -847,7 +839,7 @@ export default function ExamPage({
                     Next Q →
                   </button>
                   <button
-                    onClick={() => handleExamEnd("manual")}
+                    onClick={() => handleExamEnd()}
                     className="text-xs text-slate-400 hover:text-red-400 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     End exam

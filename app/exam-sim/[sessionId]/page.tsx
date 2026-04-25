@@ -57,7 +57,6 @@ export default function ExamSimRunnerPage({
   const [isTimerStarted, setIsTimerStarted] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [isExaminerTyping, setIsExaminerTyping] = useState(false);
-  const [interimText, setInterimText] = useState("");
   const [manualInput, setManualInput] = useState("");
   const [useManualMode, setUseManualMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,7 +102,7 @@ export default function ExamSimRunnerPage({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, interimText, isExaminerTyping]);
+  }, [messages, isExaminerTyping]);
 
   // Reading timer
   useEffect(() => {
@@ -141,7 +140,6 @@ export default function ExamSimRunnerPage({
       }
     }, 1000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimerStarted, phase]);
 
   // Time up — auto-advance
@@ -165,7 +163,6 @@ export default function ExamSimRunnerPage({
       });
     }, 1000);
     return () => { if (breakTimerRef.current) clearInterval(breakTimerRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   const playWarningBeep = () => {

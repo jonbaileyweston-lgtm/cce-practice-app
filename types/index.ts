@@ -68,6 +68,23 @@ export const RACGP_DOMAIN_LABELS: Record<RacgpDomain, string> = {
   rural_remote: "Rural & Remote medicine",
 };
 
+export type PerformancePattern =
+  | "red_flag_triage"
+  | "preventive_opportunism"
+  | "shared_decision_making"
+  | "safety_netting"
+  | "ice_elicitation"
+  | "explanation_plain_language";
+
+export const PERFORMANCE_PATTERN_LABELS: Record<PerformancePattern, string> = {
+  red_flag_triage: "Red-flag triage",
+  preventive_opportunism: "Preventive opportunism",
+  shared_decision_making: "Shared decision-making",
+  safety_netting: "Safety-netting",
+  ice_elicitation: "ICE elicitation",
+  explanation_plain_language: "Plain-language explanation",
+};
+
 export type CaseDifficulty = "standard" | "challenging" | "complex";
 
 export const DIFFICULTY_LABELS: Record<CaseDifficulty, string> = {
@@ -191,6 +208,7 @@ export interface MarkingResult {
   overallJustification: string;
   strengths: string[];
   areasForImprovement: string[];
+  topThreeChangesToPass: string[];
   perQuestionFeedback: QuestionFeedback[];
   studyTips: string[];
   transcript: Message[];

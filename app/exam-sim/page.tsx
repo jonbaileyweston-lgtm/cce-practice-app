@@ -97,7 +97,7 @@ export default function ExamSimConfigPage() {
             ))}
           </div>
           <div className="mt-3 bg-blue-50 rounded-xl px-4 py-3 text-xs text-blue-700">
-            Real CCE format: {stationCount === 6 ? "6" : "12"} stations · 10 min each · 2 min break between stations · Feedback after all stations
+            Real CCE format: {stationCount === 6 ? "6" : "12"} stations · 15 min each · 2 min break between stations · Feedback after all stations
           </div>
         </section>
 

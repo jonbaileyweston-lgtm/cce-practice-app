@@ -2409,6 +2409,17 @@ On examination:
         ],
       },
       {
+        code: "4.4",
+        title: "Outlines and justifies therapeutic options selected",
+        questions: [4],
+        points: [
+          "Justifies choice of community vs inpatient withdrawal based on risk profile and social supports.",
+          "Selects diazepam reducing regimen with clear rationale for symptom control and seizure-risk reduction.",
+          "Explains why thiamine is required in heavy alcohol use to reduce risk of Wernicke's encephalopathy.",
+          "Discusses post-withdrawal relapse prevention options (naltrexone/acamprosate) using patient-specific benefits and cautions.",
+        ],
+      },
+      {
         code: "5.6",
         title: "Educates patients and families in disease management and health-promotion skills",
         questions: [2, 4],
@@ -3635,6 +3646,416 @@ Robert arrives looking tired. He mentions his feet have been "tingling and burni
       },
       demeanour: "Matter-of-fact but guarded. Opens up when the doctor engages with the personal context (divorce, loneliness). Becomes emotional when his father is mentioned — this is the key unlocking moment. Responds well to being treated as a capable adult.",
       responseToJargon: "Reasonably health literate after 10 years with the condition — knows terms like HbA1c, metformin, blood pressure. Does not know what microalbuminuria or eGFR mean without explanation.",
+    },
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // BROSNAN — Mark, 56M, Exertional Chest Pain with LBBB (Stable Angina)
+  // Inspired by GPRA educational case material; fully adapted and rewritten.
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "brosnan",
+    patientName: "Mark BROSNAN",
+    patientAge: 56,
+    patientGender: "M",
+    presentingComplaint: "Intermittent central chest discomfort with exertion, relieved by rest",
+    topics: ["Chest Pain", "Stable Angina", "Coronary Artery Disease", "LBBB", "Cardiovascular Risk Reduction", "Shared Decision-Making"],
+    domain: "undifferentiated",
+    difficulty: "challenging",
+    icpcCode: "K – Cardiovascular",
+    year: "2026 (GPRA-inspired adaptation)",
+    scenario: `You are the GP in a suburban group practice. Mark BROSNAN, 56 years, is a regular patient known to have hypertension that has been reasonably controlled. His partner booked this appointment because she is concerned about recent episodes of chest discomfort.
+
+Mark reports a central chest ache over the past three weeks. The pain occurs when doing heavier exertion such as mowing, carrying boxes, and helping his son move furniture. He does not usually get symptoms during gentle walking. The discomfort settles within a few minutes of rest.
+
+He denies pain at rest. There is no pleuritic component, no positional change, and no reproducible chest wall tenderness by his own report. He has mild shortness of breath during episodes but no syncope.
+
+A brief surgery ECG has been done already and shows left bundle branch block (no previous ECG available for comparison).`,
+    patientRecord: {
+      name: "Mark BROSNAN",
+      age: 56,
+      gender: "Male",
+      pronouns: "He/Him",
+      sexAssignedAtBirth: "Male",
+      indigenousStatus: "Not Aboriginal or Torres Strait Islander",
+      allergies: "Penicillin (rash)",
+      medications: ["Perindopril 5 mg daily"],
+      pastHistory: ["Essential hypertension (diagnosed 4 years ago)", "Tonsillectomy in childhood"],
+      socialHistory: {
+        "Living situation": "Married, lives with partner; three adult children",
+        "Occupation": "Bank branch manager",
+        "Activity level": "No formal exercise routine",
+        "Diet": "Recently improved household diet with more vegetables and fewer fried foods",
+      },
+      familyHistory: ["Father had coronary artery bypass grafting at age 60 after angina", "Mother has hypertension"],
+      smoking: "10 cigarettes/day (approx. 25 pack-years)",
+      alcohol: "1-2 beers on weekends",
+      immunisations: ["Tetanus booster 2 years ago", "Influenza annual"],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "What focused history would you take to assess Mark's chest pain and immediate risk?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "Which features make this pain more or less likely to be myocardial ischaemia?" },
+          { type: "prompt", text: "Which cardiovascular risk factors must be explicitly elicited?" },
+          { type: "probe", text: "Mark says, 'I feel okay now, so maybe it's just muscle strain.' How do you respond?" },
+        ],
+      },
+      {
+        number: 2,
+        text: "You have examination and initial test findings: no current pain, stable observations, and ECG showing LBBB with no prior tracing available. How do you interpret this and what investigations would you request next?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "How does LBBB affect interpretation of standard exercise treadmill testing?" },
+          { type: "prompt", text: "What baseline blood tests are appropriate in primary care?" },
+          { type: "probe", text: "Which non-invasive test would you use to evaluate inducible ischaemia in this context?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "Investigation summary: blood tests are unremarkable; stress imaging demonstrates exercise-induced anterior wall motion abnormality consistent with myocardial ischaemia. Explain your diagnosis and discuss management options with Mark.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "must-use", text: "Mark asks: 'So is this definitely my heart? Am I about to have a heart attack?'" },
+          { type: "prompt", text: "How would you explain why symptoms occur only with exertion and settle with rest?" },
+          { type: "probe", text: "How do you discuss urgency without causing panic?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "Provide a comprehensive management and follow-up plan, including pharmacotherapy, referral, and safety-netting.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "Which medications would you commence now (if no contraindications), and why?" },
+          { type: "prompt", text: "What specialist referral pathway is appropriate?" },
+          { type: "probe", text: "What explicit advice do you give for prolonged or severe chest pain episodes?" },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "2.1",
+        title: "A comprehensive biopsychosocial history is taken",
+        questions: [1],
+        points: [
+          "Characterises chest pain using SOCRATES features: site, quality, triggers, duration, radiation, severity, and relieving factors.",
+          "Elicits exertional pattern and confirms absence/presence of unstable features (rest pain, prolonged episodes, syncope, diaphoresis, nausea).",
+          "Explores key cardiovascular risk factors: smoking, hypertension, dyslipidaemia, diabetes, obesity, family history, physical inactivity.",
+          "Asks about patient concerns and beliefs, including fear of inherited heart disease due to paternal CABG history.",
+          "Assesses current functional impact and what activities trigger symptoms.",
+          "Checks adherence and tolerance of existing antihypertensive treatment.",
+        ],
+      },
+      {
+        code: "2.4",
+        title: "Physical examination findings are detected accurately and interpreted correctly",
+        questions: [2],
+        points: [
+          "Performs focused cardiovascular and respiratory examination and confirms haemodynamic stability.",
+          "Interprets normal cardiorespiratory findings as not excluding coronary disease.",
+          "Confirms no current active chest pain or acute heart failure signs at consultation.",
+          "Assesses blood pressure, pulse, BMI, and peripheral vascular findings as part of risk stratification.",
+          "Recognises absence of chest wall tenderness does not rule in or out ischaemia alone.",
+        ],
+      },
+      {
+        code: "2.6",
+        title: "Rational options for investigations are chosen using an evidence-based approach",
+        questions: [2, 3],
+        points: [
+          "Orders appropriate baseline tests: FBC, UEC/creatinine, LFTs, fasting glucose/HbA1c, fasting lipids, and thyroid function where relevant to differential.",
+          "Recognises that baseline ECG showing LBBB limits utility of standard treadmill ECG interpretation for ischaemia.",
+          "Selects stress imaging (stress echocardiography or other suitable imaging-based modality) rather than plain treadmill ECG as the preferred functional test.",
+          "Interprets stress-induced anterior wall motion abnormality as evidence of inducible myocardial ischaemia.",
+          "Uses investigation sequence to refine risk and guide early cardiology referral.",
+        ],
+      },
+      {
+        code: "3.6",
+        title: "Formulates a rational list of differential diagnoses",
+        questions: [1, 2],
+        points: [
+          "Most likely diagnosis: stable angina due to coronary artery disease.",
+          "Includes other relevant differentials: musculoskeletal chest pain, gastro-oesophageal reflux disease, anxiety-related chest discomfort, valvular/cardiomyopathic causes.",
+          "Keeps acute coronary syndrome in mind and actively excludes unstable features.",
+          "Synthesises history, risk profile, ECG context, and stress imaging findings to prioritise ischaemic heart disease.",
+        ],
+      },
+      {
+        code: "1.3",
+        title: "Matches modality of communication to patient needs, health literacy and context",
+        questions: [3, 4],
+        points: [
+          "Explains diagnosis in plain language: narrowed coronary arteries can reduce blood supply during exertion, causing angina that settles with rest.",
+          "Avoids either minimising the condition or catastrophising; communicates seriousness with reassurance of a clear treatment pathway.",
+          "Checks understanding and invites questions about risk, treatment burden, and prognosis.",
+          "Uses shared decision-making language when discussing medication initiation and cardiology referral.",
+          "Provides clear, memorable emergency instructions for severe/prolonged chest pain episodes.",
+        ],
+      },
+      {
+        code: "4.4",
+        title: "Outlines and justifies the therapeutic options selected",
+        questions: [4],
+        points: [
+          "Commences guideline-consistent secondary prevention if no contraindications: antiplatelet therapy, statin, antianginal treatment (e.g. beta-blocker), and short-acting GTN for symptom relief.",
+          "Optimises blood pressure management and reinforces medication adherence.",
+          "Initiates structured risk-factor modification: smoking cessation support, exercise prescription, weight management, and dietary counselling.",
+          "Arranges timely cardiology referral for consideration of coronary angiography and further definitive management.",
+          "Provides explicit safety-netting: call emergency services for severe or prolonged chest pain not settling promptly with rest/GTN.",
+          "Plans close GP follow-up to review symptoms, side effects, blood pressure, and progress with lifestyle goals.",
+        ],
+      },
+      {
+        code: "5.3",
+        title: "Coordinates a team-based approach to patient care",
+        questions: [4],
+        points: [
+          "Coordinates referral to cardiology for further risk stratification and procedural planning.",
+          "Offers cardiac rehabilitation referral for supervised exercise, education, and behaviour change support.",
+          "Engages smoking cessation services and behavioural support options.",
+          "Involves dietitian and exercise physiology/physiotherapy as needed for sustained risk reduction.",
+          "Documents a shared care plan and follow-up intervals across primary and specialist care.",
+        ],
+      },
+    ],
+    markingRubric: [
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.1", description: "A comprehensive biopsychosocial history is taken", questions: [1] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.4", description: "Physical examination findings are detected accurately and interpreted correctly", questions: [2] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.6", description: "Rational options for investigations are chosen using an evidence-based approach", questions: [2, 3] },
+      { domain: "Diagnosis, decision-making and reasoning", domainNumber: 3, code: "3.6", description: "Formulates a rational list of differential diagnoses", questions: [1, 2] },
+      { domain: "Communication and consultation skills", domainNumber: 1, code: "1.3", description: "Matches modality of communication to patient needs, health literacy and context", questions: [3, 4] },
+      { domain: "Clinical management and therapeutic reasoning", domainNumber: 4, code: "4.4", description: "Outlines and justifies the therapeutic options selected", questions: [4] },
+      { domain: "Preventive and population health", domainNumber: 5, code: "5.3", description: "Coordinates a team-based approach to patient care", questions: [4] },
+    ],
+    debriefNotes: `The competent candidate identifies a classic stable exertional angina pattern and integrates risk factors (smoking, hypertension, family history, inactivity) into cardiovascular risk assessment. They recognise the significance of LBBB in limiting plain treadmill ECG interpretation and appropriately choose stress imaging, then interpret inducible anterior wall motion abnormality as evidence of ischaemia. Their communication is calm and clear, balancing urgency with reassurance and explicitly addressing the patient's fear of an imminent heart attack. Management is comprehensive: immediate antianginal and preventive pharmacotherapy (if no contraindications), smoking cessation, exercise/diet optimisation, cardiology referral for angiography consideration, cardiac rehabilitation, and explicit emergency safety-netting for severe or prolonged chest pain.`,
+    patientPersona: {
+      openingStatement: "My partner pushed me to come in. I've had this chest ache a few times doing heavier jobs and she reckons it's my heart.",
+      volunteerHistory: [
+        "It comes on when I'm doing things like mowing or carrying heavy boxes.",
+        "It usually settles after I sit down for a few minutes.",
+        "I've had no pain while just sitting around, including right now.",
+      ],
+      withheldHistory: [
+        "His father had bypass surgery at 60, and this scares him more than he first admits.",
+        "He still smokes daily and has tried to quit several times but relapsed each time.",
+        "He avoids exercise because he worries exertion might trigger chest pain.",
+        "He has delayed presenting for weeks because he hoped it would go away.",
+      ],
+      ice: {
+        ideas: "He suspects it might be his heart but hopes it is just stress or muscle strain.",
+        concerns: "He is worried he could collapse suddenly like what he fears happened in his family.",
+        expectations: "He wants a clear explanation and a practical plan that lets him keep working safely.",
+      },
+      demeanour: "Initially matter-of-fact and slightly dismissive of symptoms, but becomes visibly anxious when family history and heart risk are discussed. Responds best to calm, direct communication and concrete next steps.",
+      responseToJargon: "Understands basic terms like blood pressure and cholesterol, but needs plain-language explanation for terms such as ischaemia, LBBB, and angiography.",
+    },
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // HARRISON — Bill, 45M, Abnormal LFT Review (NAFLD/NASH Pattern)
+  // Inspired by GPRA educational case material; fully adapted and rewritten.
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "harrison",
+    patientName: "Bill HARRISON",
+    patientAge: 45,
+    patientGender: "M",
+    presentingComplaint: "Review of abnormal liver function tests from a routine check-up",
+    topics: ["Abnormal LFTs", "Fatty Liver Disease", "NASH", "Risk-Factor History", "Lifestyle Medicine", "Follow-up Planning"],
+    domain: "chronic_disease",
+    difficulty: "challenging",
+    icpcCode: "D – Digestive",
+    year: "2026 (GPRA-inspired adaptation)",
+    scenario: `You are a GP in a suburban practice. Bill HARRISON, 45 years, attended last week for a routine health check. He has returned today to discuss his pathology results and says he feels well overall.
+
+Recent liver tests show a mixed but mild hepatocellular/cholestatic derangement:
+• ALT 115 U/L (elevated)
+• GGT 100 U/L (elevated)
+• Bilirubin within normal limits
+• Albumin and total protein within normal limits
+
+Other screening tests from last week (FBC, UEC, fasting glucose, and lipids) were unremarkable.
+
+Bill is currently asymptomatic and asks directly what the results mean and whether he should be worried.`,
+    patientRecord: {
+      name: "Bill HARRISON",
+      age: 45,
+      gender: "Male",
+      pronouns: "He/Him",
+      sexAssignedAtBirth: "Male",
+      indigenousStatus: "Not Aboriginal or Torres Strait Islander",
+      allergies: "Nil known",
+      medications: ["Nil regular medications"],
+      pastHistory: ["Lumbar disc prolapse", "Right carpal tunnel release", "Past community-managed pneumonia"],
+      socialHistory: {
+        "Living situation": "Married with three children",
+        "Occupation": "Steel factory supervisor",
+        "Exercise": "One social round of golf each week; no structured aerobic program",
+        "Nutrition": "Recently switched to healthier meals with fewer fried foods and snack foods",
+      },
+      familyHistory: ["Father: Type 2 diabetes", "Mother: Rheumatoid arthritis"],
+      smoking: "Ex-smoker; quit 5 years ago (20 pack-years)",
+      alcohol: "Currently low intake: 1-2 beers on about 3-4 days per month",
+      immunisations: ["Tetanus booster 5 years ago", "Influenza annually"],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "Interpret Bill's current test results and outline your differential diagnosis for isolated ALT/GGT elevation in a well patient.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "Which results are reassuring and which remain clinically important?" },
+          { type: "probe", text: "What are the 'cannot miss' hepatic diagnoses at this stage?" },
+          { type: "prompt", text: "How likely is alcohol-related liver injury given the history provided so far?" },
+        ],
+      },
+      {
+        number: 2,
+        text: "What focused history and examination would you perform to identify likely causes and risk factors?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "Which risk factors for viral hepatitis must be asked explicitly?" },
+          { type: "prompt", text: "What medication and supplement history is essential?" },
+          { type: "probe", text: "How would you assess for symptoms or signs of chronic liver disease despite him feeling well?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "Further work-up is available: hepatitis A/B/C serology negative, EBV/CMV negative, TFT normal, autoimmune and metabolic liver screen negative, and liver ultrasound shows diffuse hepatic steatosis with a single 4 mm gallstone but no biliary obstruction or cholecystitis. What is your leading diagnosis and how do you explain this to Bill?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "must-use", text: "Bill asks: 'If I barely drink now, why is my liver test still off?'" },
+          { type: "prompt", text: "How do you explain the significance of the incidental gallstone finding?" },
+          { type: "probe", text: "How do you communicate the difference between simple steatosis and steatohepatitis risk?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "Provide a comprehensive management, lifestyle, and follow-up plan for this consultation.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "What weight-loss target and behavioural strategies would you propose?" },
+          { type: "prompt", text: "What alcohol advice is appropriate?" },
+          { type: "probe", text: "When and how would you repeat tests, and what progression red flags would trigger escalation?" },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "2.1",
+        title: "A comprehensive biopsychosocial history is taken",
+        questions: [2],
+        points: [
+          "Elicits hepatic symptom review: jaundice, dark urine, pale stools, pruritus, abdominal pain, fatigue, anorexia, weight loss, fevers.",
+          "Clarifies alcohol intake quantity, frequency, and recent change over time rather than relying on a single estimate.",
+          "Screens for viral hepatitis risk factors: tattoos, prior sexual exposure risk, blood products, injecting drug use, and household exposure.",
+          "Confirms medication history includes over-the-counter products, supplements, and herbal preparations.",
+          "Explores cardiometabolic risk profile and lifestyle context: central adiposity, inactivity, dietary pattern, and family metabolic history.",
+          "Elicits patient agenda and concern level about long-term liver damage.",
+        ],
+      },
+      {
+        code: "2.4",
+        title: "Physical examination findings are detected accurately and interpreted correctly",
+        questions: [2, 3],
+        points: [
+          "Performs focused exam for chronic liver disease stigmata and confirms none are present.",
+          "Assesses anthropometry and metabolic risk (BMI and waist profile if available).",
+          "Recognises that a normal abdominal exam does not exclude steatohepatitis risk.",
+          "Interprets stable observations and well appearance as lowering urgency but not negating disease risk.",
+        ],
+      },
+      {
+        code: "2.6",
+        title: "Rational options for investigations are chosen using an evidence-based approach",
+        questions: [1, 3],
+        points: [
+          "Uses a structured abnormal LFT workup to exclude common competing causes (viral, autoimmune, metabolic, medication-related).",
+          "Interprets negative broad serologic/metabolic screen plus steatotic ultrasound pattern as supporting NAFLD as the leading diagnosis.",
+          "Distinguishes incidental, uncomplicated small gallstone from the primary explanation for transaminitis.",
+          "Plans interval repeat LFTs and fibrosis risk assessment pathway if abnormalities persist or worsen.",
+        ],
+      },
+      {
+        code: "3.6",
+        title: "Formulates a rational list of differential diagnoses",
+        questions: [1, 3],
+        points: [
+          "Most likely diagnosis: NAFLD spectrum disease (with risk of steatohepatitis).",
+          "Includes alternatives: alcohol-related liver disease, drug/supplement-induced liver injury, chronic viral hepatitis (less likely with current data), autoimmune and hereditary/metabolic causes (less likely with negative screen).",
+          "Explains why incidental cholelithiasis without obstruction or inflammation is not the main diagnosis.",
+          "Uses risk-factor profile and investigation results to prioritise diagnoses logically.",
+        ],
+      },
+      {
+        code: "1.3",
+        title: "Matches modality of communication to patient needs, health literacy and context",
+        questions: [3, 4],
+        points: [
+          "Explains abnormal LFTs in plain language and links likely cause to metabolic/lifestyle risk rather than alarmist language.",
+          "Addresses Bill's question about low current alcohol intake without blame and clarifies multifactorial causation.",
+          "Normalises uncertainty where appropriate and clearly states what is known vs still being monitored.",
+          "Checks understanding using chunk-and-check and agrees a practical, collaborative plan.",
+        ],
+      },
+      {
+        code: "4.7",
+        title: "A patient-centred and comprehensive management plan is developed",
+        questions: [4],
+        points: [
+          "Provides specific lifestyle plan: calorie-aware diet quality improvement and regular aerobic/resistance activity progression.",
+          "Sets realistic weight-loss goal (e.g. 5-10% over 6-12 months) and explains expected liver benefit.",
+          "Reinforces low-risk alcohol limits and advises minimising intake while liver enzymes are elevated.",
+          "Arranges repeat LFTs in 3-6 months with earlier review if symptoms emerge.",
+          "Considers staged fibrosis risk stratification/escalation if enzymes persistently abnormal (e.g. hepatology referral or additional fibrosis assessment).",
+          "Safety-nets red flags: jaundice, RUQ pain, fever, dark urine, pale stools, persistent vomiting, rapid clinical decline.",
+        ],
+      },
+      {
+        code: "5.6",
+        title: "Educates patients and families in disease management and health-promotion skills",
+        questions: [4],
+        points: [
+          "Provides actionable education on sustainable nutrition and activity habits suited to Bill's work/family routine.",
+          "Uses motivational framing to maintain current positive lifestyle momentum rather than restarting from zero.",
+          "Encourages family-supported behaviour change and shared goals.",
+          "Documents agreed review intervals and self-monitoring priorities.",
+        ],
+      },
+    ],
+    markingRubric: [
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.1", description: "A comprehensive biopsychosocial history is taken", questions: [2] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.4", description: "Physical examination findings are detected accurately and interpreted correctly", questions: [2, 3] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.6", description: "Rational options for investigations are chosen using an evidence-based approach", questions: [1, 3] },
+      { domain: "Diagnosis, decision-making and reasoning", domainNumber: 3, code: "3.6", description: "Formulates a rational list of differential diagnoses", questions: [1, 3] },
+      { domain: "Communication and consultation skills", domainNumber: 1, code: "1.3", description: "Matches modality of communication to patient needs, health literacy and context", questions: [3, 4] },
+      { domain: "Clinical management and therapeutic reasoning", domainNumber: 4, code: "4.7", description: "A patient-centred and comprehensive management plan is developed", questions: [4] },
+      { domain: "Preventive and population health", domainNumber: 5, code: "5.6", description: "Educates patients and families in disease management and health-promotion skills", questions: [4] },
+    ],
+    debriefNotes: `The competent candidate interprets Bill's pattern as mild persistent transaminitis with elevated GGT in an otherwise well patient and works systematically through key differentials. They elicit critical risk-factor history (including past tattooing and historical sexual exposure risk), clarify true alcohol exposure over time, and exclude medication/supplement causes. They correctly integrate negative viral/autoimmune/metabolic screens with ultrasound-confirmed diffuse steatosis and identify NAFLD spectrum disease as the leading diagnosis, while recognising the 4 mm gallstone as incidental in the absence of obstruction or inflammation. Communication is clear, non-judgemental, and practical: Bill understands why current low alcohol intake does not fully explain the findings and why weight/metabolic risk remains central. Management includes measurable lifestyle goals, alcohol-risk counselling, repeat LFTs in 3-6 months, and explicit safety-netting and escalation criteria if liver tests or symptoms worsen.`,
+    patientPersona: {
+      openingStatement: "So what do my results actually mean, doc? I feel fine.",
+      volunteerHistory: [
+        "I haven't had any abdominal pain or discomfort at all.",
+        "No yellow skin or eyes that I've noticed, and urine and bowel motions seem normal.",
+        "My wife and I have been eating much better lately, so I thought I'd be in the clear.",
+      ],
+      withheldHistory: [
+        "He had a tattoo done in a licensed parlour around 20 years ago.",
+        "He had commercial sexual contacts before marriage about 20 years ago, with no other partners since marriage.",
+        "He uses no prescription medicines, supplements, or herbal products despite initially saying 'nothing much.'",
+        "He worries this could mean liver cancer but is embarrassed to ask directly.",
+      ],
+      ice: {
+        ideas: "He thinks the abnormal test might just be from past social drinking and expects it to settle quickly.",
+        concerns: "He is worried this might become something serious and affect his ability to work and support his family.",
+        expectations: "He wants a straightforward explanation and a practical plan, preferably without lots of medication.",
+      },
+      demeanour: "Calm and pragmatic, mildly defensive if he feels judged about lifestyle. Becomes engaged when advice is specific, respectful, and outcome-focused.",
+      responseToJargon: "Comfortable with basic health terms but needs plain-language explanation for transaminitis, steatosis, fibrosis risk, and steatohepatitis.",
     },
   },
 ];

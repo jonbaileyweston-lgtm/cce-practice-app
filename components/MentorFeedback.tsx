@@ -7,8 +7,28 @@ interface MentorFeedbackProps {
 }
 
 export default function MentorFeedback({ result }: MentorFeedbackProps) {
+  const topThreeChanges =
+    result.topThreeChangesToPass.length === 3
+      ? result.topThreeChangesToPass
+      : result.areasForImprovement.slice(0, 3);
+
   return (
     <div className="space-y-6">
+      {/* Borderline-to-pass coaching */}
+      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5">
+        <h3 className="font-semibold text-indigo-900 flex items-center gap-2 mb-3">
+          <span className="text-lg">🎯</span> Top 3 changes that would lift this station to pass
+        </h3>
+        <ul className="space-y-2">
+          {topThreeChanges.map((change, i) => (
+            <li key={i} className="text-sm text-indigo-800 flex items-start gap-2">
+              <span className="text-indigo-500 font-bold flex-shrink-0">{i + 1}.</span>
+              {change}
+            </li>
+          ))}
+        </ul>
+      </div>
+
       {/* Overall strengths + improvements */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Strengths */}

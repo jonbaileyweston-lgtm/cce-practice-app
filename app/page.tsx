@@ -1,20 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CaseCard from "@/components/CaseCard";
 import { CASES } from "@/data/cases";
-import type { RacgpDomain } from "@/types";
-import { RACGP_DOMAIN_LABELS } from "@/types";
+import type { PerformancePattern, RacgpDomain } from "@/types";
+import { PERFORMANCE_PATTERN_LABELS, RACGP_DOMAIN_LABELS } from "@/types";
 import Link from "next/link";
 import {
   getSessionHistory,
   getLastSessionForCase,
   getDomainSummaries,
+  getPatternSummaries,
   getCasesForSpacedRepetition,
   getCompletedCountForCase,
   clearHistory,
   type SessionRecord,
   type DomainSummary,
+  type PatternSummary,
 } from "@/lib/analytics";
 
 const DOMAIN_HEAT_COLORS: Record<string, string> = {
@@ -25,6 +27,13 @@ const DOMAIN_HEAT_COLORS: Record<string, string> = {
 };
 
 function domainHeatLevel(summary: DomainSummary | undefined): "strong" | "ok" | "weak" | "untested" {
+  if (!summary || summary.attemptCount === 0) return "untested";
+  if (summary.averageScore >= 2.5) return "strong";
+  if (summary.averageScore >= 1.5) return "ok";
+  return "weak";
+}
+
+function patternHeatLevel(summary: PatternSummary | undefined): "strong" | "ok" | "weak" | "untested" {
   if (!summary || summary.attemptCount === 0) return "untested";
   if (summary.averageScore >= 2.5) return "strong";
   if (summary.averageScore >= 1.5) return "ok";
@@ -44,30 +53,32 @@ const ALL_DOMAINS: RacgpDomain[] = [
   "rural_remote",
 ];
 
+const ALL_PATTERNS: PerformancePattern[] = [
+  "red_flag_triage",
+  "preventive_opportunism",
+  "shared_decision_making",
+  "safety_netting",
+  "ice_elicitation",
+  "explanation_plain_language",
+];
+
 export default function Home() {
-  const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([]);
-  const [domainSummaries, setDomainSummaries] = useState<DomainSummary[]>([]);
-  const [reviewCaseIds, setReviewCaseIds] = useState<Set<string>>(new Set());
-  const [lastSessions, setLastSessions] = useState<Record<string, SessionRecord | undefined>>({});
-  const [completedCounts, setCompletedCounts] = useState<Record<string, number>>({});
+  const [, setRefreshKey] = useState(0);
 
-  useEffect(() => {
-    const history = getSessionHistory();
-    setSessionHistory(history);
-    setDomainSummaries(getDomainSummaries());
-
-    const reviewCases = getCasesForSpacedRepetition();
-    setReviewCaseIds(new Set(reviewCases.map((c) => c.id)));
-
-    const sessions: Record<string, SessionRecord | undefined> = {};
-    const counts: Record<string, number> = {};
-    for (const c of CASES) {
-      sessions[c.id] = getLastSessionForCase(c.id);
-      counts[c.id] = getCompletedCountForCase(c.id);
-    }
-    setLastSessions(sessions);
-    setCompletedCounts(counts);
-  }, []);
+  const history = getSessionHistory();
+  const reviewCases = getCasesForSpacedRepetition();
+  const sessions: Record<string, SessionRecord | undefined> = {};
+  const counts: Record<string, number> = {};
+  for (const c of CASES) {
+    sessions[c.id] = getLastSessionForCase(c.id);
+    counts[c.id] = getCompletedCountForCase(c.id);
+  }
+  const sessionHistory = history;
+  const domainSummaries = getDomainSummaries();
+  const patternSummaries = getPatternSummaries();
+  const reviewCaseIds = new Set(reviewCases.map((c) => c.id));
+  const lastSessions = sessions;
+  const completedCounts = counts;
 
   const totalAttempts = sessionHistory.length;
   const passCount = sessionHistory.filter((s) =>
@@ -78,14 +89,14 @@ export default function Home() {
   for (const d of domainSummaries) {
     summaryByDomain[d.domain] = d;
   }
+  const summaryByPattern: Record<PerformancePattern, PatternSummary | undefined> = {} as never;
+  for (const p of patternSummaries) {
+    summaryByPattern[p.pattern] = p;
+  }
 
   const handleClearHistory = () => {
     clearHistory();
-    setSessionHistory([]);
-    setDomainSummaries([]);
-    setReviewCaseIds(new Set());
-    setLastSessions({});
-    setCompletedCounts(Object.fromEntries(CASES.map((c) => [c.id, 0])));
+    setRefreshKey((k) => k + 1);
   };
 
   return (
@@ -103,12 +114,20 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <Link
-              href="/exam-sim"
-              className="flex-shrink-0 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
-            >
-              Exam simulation
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/drills"
+                className="flex-shrink-0 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              >
+                Micro-drills
+              </Link>
+              <Link
+                href="/exam-sim"
+                className="flex-shrink-0 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              >
+                Exam simulation
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -198,6 +217,39 @@ export default function Home() {
               </div>
             </div>
 
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-4">
+              <h3 className="text-sm font-semibold text-slate-600 mb-3 uppercase tracking-wide">
+                Pattern performance
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {ALL_PATTERNS.map((pattern) => {
+                  const summary = summaryByPattern[pattern];
+                  const heat = patternHeatLevel(summary);
+                  const color = DOMAIN_HEAT_COLORS[heat];
+                  return (
+                    <div
+                      key={pattern}
+                      className={`rounded-xl border px-3 py-2.5 text-center ${color}`}
+                    >
+                      <div className="text-xs font-semibold leading-tight">
+                        {PERFORMANCE_PATTERN_LABELS[pattern]}
+                      </div>
+                      {summary && summary.attemptCount > 0 ? (
+                        <div className="text-xs mt-1 opacity-70">
+                          {summary.attemptCount} scored attempt{summary.attemptCount !== 1 ? "s" : ""}
+                        </div>
+                      ) : (
+                        <div className="text-xs mt-1 opacity-50">No signal yet</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-slate-400 mt-3">
+                Pattern scores are inferred from rubric outcomes to surface cross-case communication and safety gaps.
+              </p>
+            </div>
+
             {reviewCaseIds.size > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
                 <strong>Spaced repetition:</strong>{" "}
@@ -212,6 +264,15 @@ export default function Home() {
           <h2 className="text-lg font-semibold text-slate-700 mb-4">
             Choose a Case ({CASES.length} available)
           </h2>
+          <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-slate-500">
+            <span className="font-medium text-slate-600">Modes:</span>
+            <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+              Case Discussion = examiner Q&A
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Recorded Consultation = patient interaction
+            </span>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {CASES.map((c) => (
               <CaseCard

@@ -38,6 +38,7 @@ interface ClaudeEvalResponse {
   overallJustification: string;
   strengths: string[];
   areasForImprovement: string[];
+  topThreeChangesToPass?: string[];
   perQuestionFeedback: ClaudeQuestionFeedback[];
   studyTips: string[];
 }
@@ -117,6 +118,9 @@ Remember: respond with ONLY valid JSON matching the specified structure.`;
       overallJustification: evalData.overallJustification,
       strengths: evalData.strengths,
       areasForImprovement: evalData.areasForImprovement,
+      topThreeChangesToPass: (evalData.topThreeChangesToPass ?? [])
+        .filter((s) => typeof s === "string" && s.trim().length > 0)
+        .slice(0, 3),
       perQuestionFeedback: evalData.perQuestionFeedback.map((qf) => ({
         ...qf,
         questionText:

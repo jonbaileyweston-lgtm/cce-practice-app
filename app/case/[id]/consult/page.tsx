@@ -42,13 +42,6 @@ export default function ConsultPage({
   const caseData = getCaseById(id);
   const router = useRouter();
 
-  if (!caseData) notFound();
-  if (!caseData.patientPersona) {
-    // Redirect to Case Discussion if no patient persona
-    router.replace(`/case/${id}/exam`);
-    return null;
-  }
-
   const [messages, setMessages] = useState<Message[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isConsultStarted, setIsConsultStarted] = useState(false);
@@ -81,16 +74,12 @@ export default function ConsultPage({
     onFallbackActive: () => setIsTTSFallback(true),
   });
 
-  const handleFinalTranscript = useCallback(
-    (transcript: string) => {
-      if (!transcript.trim() || isSubmitting) return;
-      setInterimText("");
-      setGarbledWarning(null);
-      submitCandidateMessage(transcript.trim());
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSubmitting]
-  );
+  const handleFinalTranscript = (transcript: string) => {
+    if (!transcript.trim() || isSubmitting) return;
+    setInterimText("");
+    setGarbledWarning(null);
+    submitCandidateMessage(transcript.trim());
+  };
 
   const { isListening, isSupported, startListening, stopListening } =
     useWhisperSTT({
@@ -128,7 +117,6 @@ export default function ConsultPage({
       }
     }, 1000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimerStarted, isConsultEnded]);
 
   // When time is up: patient says goodbye, then navigate to results
@@ -143,7 +131,7 @@ export default function ConsultPage({
     const msgs = [...messagesRef.current, timeUpMsg];
     setMessages(msgs);
     streamPatientResponse(msgs).finally(() => {
-      setTimeout(() => handleConsultEnd("time"), 3000);
+      setTimeout(() => handleConsultEnd(), 3000);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimeUp]);
@@ -245,7 +233,6 @@ export default function ConsultPage({
         console.error(err);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [id, enqueue, voiceRole]
   );
 
@@ -287,7 +274,7 @@ export default function ConsultPage({
     await streamPatientResponse(newMessages);
   };
 
-  const handleConsultEnd = async (reason: "time" | "manual") => {
+  const handleConsultEnd = async () => {
     if (isConsultEnded) return;
     setIsConsultEnded(true);
     stopSpeaking();
@@ -318,6 +305,15 @@ export default function ConsultPage({
     isTimerStarted && !isTimeUp &&
     elapsedSeconds >= WARNING_THRESHOLD &&
     elapsedSeconds < TOTAL_CONSULT_SECONDS;
+
+  useEffect(() => {
+    if (caseData && !caseData.patientPersona) {
+      router.replace(`/case/${id}/exam`);
+    }
+  }, [caseData, id, router]);
+
+  if (!caseData) notFound();
+  if (!caseData.patientPersona) return null;
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 overflow-hidden">
@@ -535,7 +531,7 @@ export default function ConsultPage({
                     </button>
                   )}
                   <button
-                    onClick={() => handleConsultEnd("manual")}
+                    onClick={() => handleConsultEnd()}
                     className="text-xs text-slate-400 hover:text-red-400 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     End consult

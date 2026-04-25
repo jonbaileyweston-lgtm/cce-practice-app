@@ -41,6 +41,7 @@ export default function CaseCard({
   lastSession,
   isDueForReview = false,
 }: CaseCardProps) {
+  const hasConsultationMode = Boolean(caseData.patientPersona);
   const domainLabel = RACGP_DOMAIN_LABELS[caseData.domain] ?? caseData.domain;
   const difficultyLabel = DIFFICULTY_LABELS[caseData.difficulty] ?? caseData.difficulty;
   const difficultyColor =
@@ -105,6 +106,22 @@ export default function CaseCard({
           {caseData.presentingComplaint}
         </p>
 
+        {/* Available practice modes */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+            Case Discussion
+          </span>
+          {hasConsultationMode ? (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Recorded Consultation
+            </span>
+          ) : (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-50 text-slate-500 border border-slate-200">
+              Discussion only
+            </span>
+          )}
+        </div>
+
         {/* Domain + difficulty tags */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
@@ -126,7 +143,7 @@ export default function CaseCard({
               </span>
             ) : (
               <span className="text-xs text-slate-400">
-                {caseData.questions.length} questions · 10 min
+                {caseData.questions.length} questions · 15 min
               </span>
             )}
             {lastAttemptDate && (

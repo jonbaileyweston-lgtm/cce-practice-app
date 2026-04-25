@@ -4,10 +4,17 @@
  * The old "cce-session-history" key (completion-count-only) is migrated on first read.
  */
 
-import type { CompetencyRating, MarkingResult, OverallRating, RacgpDomain } from "@/types";
+import type {
+  CompetencyRating,
+  MarkingResult,
+  OverallRating,
+  PerformancePattern,
+  RacgpDomain,
+} from "@/types";
 import { CASES } from "@/data/cases";
 
-const HISTORY_KEY = "cce-session-history-v2";
+const HISTORY_KEY = "cce-session-history-v3";
+const V2_KEY = "cce-session-history-v2";
 const LEGACY_KEY = "cce-session-history";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -20,6 +27,8 @@ export interface SessionRecord {
   overallRating: OverallRating;
   /** Domain-number → best rating in that domain for this session */
   domainScores: Record<string, CompetencyRating>;
+  /** Performance-pattern summary for this session */
+  patternScores: Partial<Record<PerformancePattern, CompetencyRating>>;
   missedDiagnosis: boolean;
 }
 
@@ -29,6 +38,14 @@ export interface DomainSummary {
   /** Average numeric score (0–3) across all criteria in this domain */
   averageScore: number;
   /** Worst rating seen — drives spaced repetition urgency */
+  worstRating: CompetencyRating;
+  isWeak: boolean;
+}
+
+export interface PatternSummary {
+  pattern: PerformancePattern;
+  attemptCount: number;
+  averageScore: number;
   worstRating: CompetencyRating;
   isWeak: boolean;
 }
@@ -50,6 +67,15 @@ const OVERALL_IS_FAIL: Record<OverallRating, boolean> = {
   above_standard: false,
 };
 
+const ALL_PATTERNS: PerformancePattern[] = [
+  "red_flag_triage",
+  "preventive_opportunism",
+  "shared_decision_making",
+  "safety_netting",
+  "ice_elicitation",
+  "explanation_plain_language",
+];
+
 // ─── Storage helpers ──────────────────────────────────────────────────────────
 
 function loadHistory(): SessionRecord[] {
@@ -57,6 +83,21 @@ function loadHistory(): SessionRecord[] {
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
     if (raw) return JSON.parse(raw) as SessionRecord[];
+
+    const v2Raw = localStorage.getItem(V2_KEY);
+    if (v2Raw) {
+      const v2 = JSON.parse(v2Raw) as Array<
+        Omit<SessionRecord, "patternScores"> & {
+          patternScores?: Partial<Record<PerformancePattern, CompetencyRating>>;
+        }
+      >;
+      const migratedV2: SessionRecord[] = v2.map((s) => ({
+        ...s,
+        patternScores: s.patternScores ?? {},
+      }));
+      saveHistory(migratedV2);
+      return migratedV2;
+    }
 
     // Migrate from legacy format (no domain scores)
     const legacy = localStorage.getItem(LEGACY_KEY);
@@ -71,6 +112,7 @@ function loadHistory(): SessionRecord[] {
           domain: c?.domain ?? "undifferentiated",
           overallRating: "borderline",
           domainScores: {},
+          patternScores: {},
           missedDiagnosis: false,
         };
       });
@@ -135,12 +177,62 @@ export function recordSession(result: MarkingResult, caseId: string): void {
     domain: caseData.domain,
     overallRating: result.overallRating,
     domainScores,
+    patternScores: derivePatternScores(result),
     missedDiagnosis: hasMissedDiagnosis(result),
   };
 
   const history = loadHistory();
   history.push(record);
   saveHistory(history);
+}
+
+function derivePatternScores(
+  result: MarkingResult
+): Partial<Record<PerformancePattern, CompetencyRating>> {
+  const buckets: Record<PerformancePattern, CompetencyRating[]> = {
+    red_flag_triage: [],
+    preventive_opportunism: [],
+    shared_decision_making: [],
+    safety_netting: [],
+    ice_elicitation: [],
+    explanation_plain_language: [],
+  };
+
+  for (const rr of result.rubricResults) {
+    const code = rr.rubricItem.code;
+    const domainNumber = rr.rubricItem.domainNumber;
+
+    if (code === "3.7" || code === "10.1" || code === "9.2") {
+      buckets.red_flag_triage.push(rr.rating);
+    }
+    if (domainNumber === 5) {
+      buckets.preventive_opportunism.push(rr.rating);
+    }
+    if (code === "1.10" || code === "4.7" || code === "4.8") {
+      buckets.shared_decision_making.push(rr.rating);
+    }
+    if (code === "1.11" || code === "4.7") {
+      buckets.safety_netting.push(rr.rating);
+    }
+    if (code === "2.1") {
+      buckets.ice_elicitation.push(rr.rating);
+    }
+    if (code === "1.3" || code === "4.8") {
+      buckets.explanation_plain_language.push(rr.rating);
+    }
+  }
+
+  const patternScores: Partial<Record<PerformancePattern, CompetencyRating>> = {};
+  for (const pattern of ALL_PATTERNS) {
+    const ratings = buckets[pattern];
+    if (ratings.length === 0) continue;
+    // Use worst rating as the session pattern score to keep remediation-oriented behaviour.
+    const worst = ratings.reduce((a, b) =>
+      RATING_SCORE[b] < RATING_SCORE[a] ? b : a
+    );
+    patternScores[pattern] = worst;
+  }
+  return patternScores;
 }
 
 /**
@@ -208,6 +300,49 @@ export function getDomainWeaknesses(): DomainSummary[] {
     .sort((a, b) => a.averageScore - b.averageScore);
 }
 
+export function getPatternSummaries(): PatternSummary[] {
+  const history = loadHistory();
+  const patternMap: Record<
+    PerformancePattern,
+    { scores: number[]; worstRating: CompetencyRating; attemptCount: number }
+  > = {
+    red_flag_triage: { scores: [], worstRating: "fully_demonstrated", attemptCount: 0 },
+    preventive_opportunism: { scores: [], worstRating: "fully_demonstrated", attemptCount: 0 },
+    shared_decision_making: { scores: [], worstRating: "fully_demonstrated", attemptCount: 0 },
+    safety_netting: { scores: [], worstRating: "fully_demonstrated", attemptCount: 0 },
+    ice_elicitation: { scores: [], worstRating: "fully_demonstrated", attemptCount: 0 },
+    explanation_plain_language: { scores: [], worstRating: "fully_demonstrated", attemptCount: 0 },
+  };
+
+  for (const session of history) {
+    const patternEntries = Object.entries(session.patternScores ?? {}) as Array<
+      [PerformancePattern, CompetencyRating]
+    >;
+    for (const [pattern, rating] of patternEntries) {
+      patternMap[pattern].scores.push(RATING_SCORE[rating]);
+      patternMap[pattern].attemptCount += 1;
+      if (RATING_SCORE[rating] < RATING_SCORE[patternMap[pattern].worstRating]) {
+        patternMap[pattern].worstRating = rating;
+      }
+    }
+  }
+
+  return ALL_PATTERNS.map((pattern) => {
+    const p = patternMap[pattern];
+    const averageScore =
+      p.scores.length > 0
+        ? p.scores.reduce((a, b) => a + b, 0) / p.scores.length
+        : 3;
+    return {
+      pattern,
+      attemptCount: p.attemptCount,
+      averageScore,
+      worstRating: p.worstRating,
+      isWeak: averageScore < 2,
+    };
+  });
+}
+
 /**
  * Returns cases due for spaced repetition review.
  * Priority: cases where the last attempt was a fail/borderline, sorted by
@@ -242,6 +377,7 @@ export function clearHistory(): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.removeItem(HISTORY_KEY);
+    localStorage.removeItem(V2_KEY);
     localStorage.removeItem(LEGACY_KEY);
   } catch {
     // ignore
