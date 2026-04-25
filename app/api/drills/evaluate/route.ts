@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
 import { getDrillById } from "@/data/drills";
+import { formatDrillTranscriptForEvaluation } from "@/lib/prompts";
 
 export const runtime = "nodejs";
 
@@ -40,9 +41,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const transcript = messages
-      .map((m) => `${m.role === "patient" ? "PATIENT" : "CANDIDATE"}: ${m.content}`)
-      .join("\n\n");
+    const transcript = formatDrillTranscriptForEvaluation(messages);
 
     const system = `You are an expert RACGP communication coach running a short micro-drill.
 
@@ -52,6 +51,7 @@ PASS CRITERIA:
 ${drill.passCriteria.map((p) => `- ${p}`).join("\n")}
 
 Evaluate only communication performance for this drill.
+Assume this is a live interactive transcript and score interaction quality, flow, prioritisation, empathy, and clarity.
 Return strict JSON only (no markdown) in this schema:
 {
   "overallRating": "pass" | "needs_work",
@@ -64,7 +64,8 @@ Return strict JSON only (no markdown) in this schema:
 Rules:
 - topThreeChangesToPass must contain exactly 3 concrete behaviour changes
 - Keep feedback concise and specific to the transcript
-- Avoid generic study advice`;
+- Avoid generic study advice
+- If the candidate misses agenda negotiation, ICE, understanding checks, sequencing logic, or safety language when relevant, include that explicitly`;
 
     const user = `DRILL DURATION: ${durationSeconds}s
 

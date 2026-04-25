@@ -19,6 +19,11 @@ export interface DrillVariant {
   scenario: string;
   openingPrompt: string;
   followUpPrompts: string[];
+  patientProfile?: string;
+  stationSetting?: string;
+  keyContextPoints?: string[];
+  hiddenInformation?: string[];
+  investigationData?: string[];
 }
 
 export interface DrillDefinition {
@@ -296,8 +301,22 @@ export const DRILLS: DrillDefinition[] = [
     variants: [
       {
         id: "pr_1",
-        scenario: "Mid-consultation synthesis request before selecting next steps.",
-        openingPrompt: "Can you summarise your current problem representation in one sentence?",
+        scenario:
+          "You are 8 minutes into a same-day consult with a 47-year-old primary-school teacher in a regional town. She reports 6 weeks of worsening exertional breathlessness, dry cough at night, reduced exercise tolerance, and intermittent central chest tightness that is not clearly pleuritic. She had a viral illness 2 months ago, has a history of asthma in adolescence, and recently restarted smoking during a stressful separation. She denies haemoptysis but notes two episodes of waking breathless overnight and mild ankle swelling by evening. Observations in clinic: HR 104, BP 138/86, RR 22, SpO2 94% room air, afebrile. Chest exam: bibasal fine crackles, no wheeze. ECG in clinic shows sinus tachycardia without acute ischemic changes.",
+        stationSetting:
+          "Late-afternoon urgent appointment in a rural mixed clinic with limited immediate imaging access.",
+        patientProfile:
+          "47-year-old woman, school teacher, caring for two children, recently under major psychosocial stress.",
+        keyContextPoints: [
+          "No known ischemic heart disease history, but strong family cardiovascular history.",
+          "Candidate must separate most likely diagnosis from cannot-miss alternatives before next steps.",
+        ],
+        investigationData: [
+          "Point-of-care glucose normal.",
+          "No prior echocardiogram available in local record.",
+        ],
+        openingPrompt:
+          "Pause there. Give me your one-line problem representation before we discuss management.",
         followUpPrompts: [
           "What key features make this case distinctive?",
           "What is your leading diagnosis and why?",
@@ -306,8 +325,22 @@ export const DRILLS: DrillDefinition[] = [
       },
       {
         id: "pr_2",
-        scenario: "Undifferentiated febrile illness with hypotension in primary care.",
-        openingPrompt: "Give me your one-line problem representation before management.",
+        scenario:
+          "A 32-year-old man presents to rural general practice with 24 hours of high fevers, rigors, diffuse myalgia, headache, and progressive dizziness on standing. He returned 5 days ago from seasonal farm work in Far North Queensland and reports multiple mosquito bites plus a healing skin abrasion on his shin. He has had poor oral intake, two episodes of vomiting, and one loose stool. In clinic he appears flushed and lethargic but is oriented. Obs: T 39.3C, HR 122, BP 90/56 (drops to 82 systolic standing), RR 24, SpO2 97% RA. Exam: dry mucous membranes, mild right upper quadrant tenderness, no meningism, no focal neurology, no purpuric rash.",
+        stationSetting:
+          "Undifferentiated acute febrile presentation in primary care with long transfer time to tertiary ED.",
+        patientProfile:
+          "Previously well 32-year-old male, outdoor seasonal worker, no regular medications.",
+        keyContextPoints: [
+          "Competing differentials include severe sepsis, tropical/vector-borne infection, and significant dehydration with evolving shock.",
+          "Problem representation should include risk signal and trajectory, not just symptom list.",
+        ],
+        investigationData: [
+          "Capillary glucose 5.8 mmol/L.",
+          "Urine dip in clinic: concentrated urine, trace ketones, no nitrites or leukocytes.",
+        ],
+        openingPrompt:
+          "Before any treatment sequence, give me your one-line problem representation.",
         followUpPrompts: [
           "Which key positives/negatives are essential?",
           "What risk signal must be included?",
@@ -316,8 +349,22 @@ export const DRILLS: DrillDefinition[] = [
       },
       {
         id: "pr_3",
-        scenario: "Progressive cognitive decline with functional change in older adult.",
-        openingPrompt: "Summarise this case in one sentence as you would in the CCE.",
+        scenario:
+          "You are reviewing a 78-year-old retired mechanic brought by his daughter for 12 months of progressive memory decline, repetitive questioning, missed medication doses, and recent financial errors. Over the last 3 months he has had two episodes of getting lost while driving familiar routes and one near-miss kitchen fire after forgetting a stove burner. He remains independent in basic ADLs but now needs assistance with bills, shopping, and transport planning. Mood is described as 'flat' after his wife's death last year, but there is no frank psychosis. MMSE in clinic is 23/30 with impaired short-term recall and executive sequencing; neuro exam is non-focal. Bloods from last week: TSH, B12, folate, FBC, UEC all within normal limits.",
+        stationSetting:
+          "Routine GP follow-up in a suburban practice, family present and concerned about safety and capacity.",
+        patientProfile:
+          "78-year-old widower living alone, daughter visits twice weekly, drives independently.",
+        keyContextPoints: [
+          "Candidate should distinguish cognitive syndrome, functional impact, and immediate safety issues in one synthesis line.",
+          "Include key negatives that reduce likelihood of reversible metabolic causes already screened.",
+        ],
+        investigationData: [
+          "No focal lesion on CT head from 6 months ago (done after minor fall).",
+          "Medication list includes temazepam PRN most nights.",
+        ],
+        openingPrompt:
+          "Summarise this entire case in one sentence as you would in the CCE.",
         followUpPrompts: [
           "What timeline details are critical?",
           "How do you include functional impact succinctly?",
@@ -326,7 +373,20 @@ export const DRILLS: DrillDefinition[] = [
       },
       {
         id: "pr_4",
-        scenario: "Young adult with thyroid nodule and suspicious ultrasound findings.",
+        scenario:
+          "A 29-year-old woman presents after noticing a right-sided neck lump for 2 months. She reports mild pressure with swallowing solids, intermittent voice fatigue by evening, and 4 kg unintentional weight loss over 3 months. No stridor or acute airway distress. Family history includes an aunt with thyroid cancer. Examination finds a firm 2.4 cm right thyroid nodule that moves on swallowing with a palpable ipsilateral level III cervical node. TFTs are euthyroid. Ultrasound report describes a solid markedly hypoechoic irregular taller-than-wide nodule with punctate echogenic foci and abnormal ipsilateral nodes.",
+        stationSetting:
+          "Semi-urgent GP review after imaging, discussing synthesis before test sequencing and referral urgency.",
+        patientProfile:
+          "29-year-old female, works in hospitality, highly anxious about cancer risk and fertility implications.",
+        keyContextPoints: [
+          "Representation should capture both probability signal and urgency signal.",
+          "Candidate should avoid overcalling certainty while clearly naming cannot-miss pathology.",
+        ],
+        investigationData: [
+          "TSH 1.4 mIU/L, free T4 normal.",
+          "No prior thyroid imaging on file.",
+        ],
         openingPrompt: "Provide your one-sentence problem representation now.",
         followUpPrompts: [
           "What diagnostic qualifiers belong in the sentence?",
@@ -336,8 +396,22 @@ export const DRILLS: DrillDefinition[] = [
       },
       {
         id: "pr_5",
-        scenario: "Child with polyuria, weight loss and abdominal pain in rural setting.",
-        openingPrompt: "Before treatment, summarise the problem representation in one line.",
+        scenario:
+          "A 10-year-old boy is brought to a remote clinic by his mother with 3 weeks of excessive thirst, nocturia, new daytime urinary accidents, and 4 kg weight loss. Over the last 24 hours he has developed diffuse abdominal pain, nausea, and two episodes of vomiting, and today appears increasingly lethargic. Mother says he has been breathing 'fast and deep' this evening. Examination: dry mucous membranes, delayed capillary refill, tachycardia 132, RR 32 with deep respirations, BP 94/58, afebrile, drowsy but rousable. Bedside BGL reads 24.6 mmol/L; capillary ketones 5.8 mmol/L. Nearest paediatric retrieval-capable hospital is 3 hours by road with weather-limited air transfer overnight.",
+        stationSetting:
+          "After-hours rural emergency presentation with limited onsite resources and retrieval delay risk.",
+        patientProfile:
+          "10-year-old child with no known chronic disease, lives on a sheep property 90 minutes from town.",
+        keyContextPoints: [
+          "One-line representation must include age, temporal evolution, hyperglycaemic ketosis severity markers, and acuity/rural risk context.",
+          "Candidate should signal urgent life-threatening physiology rather than simple 'new diabetes'.",
+        ],
+        investigationData: [
+          "Venous blood gas pending; point-of-care ketones markedly elevated.",
+          "Urine dip: large glucose and ketones.",
+        ],
+        openingPrompt:
+          "Before treatment, give me your one-line problem representation now.",
         followUpPrompts: [
           "What red-flag elements must appear?",
           "How do you show likely diagnosis and severity together?",
@@ -917,4 +991,195 @@ export const DRILLS: DrillDefinition[] = [
 
 export function getDrillById(id: string): DrillDefinition | undefined {
   return DRILLS.find((d) => d.id === id);
+}
+
+export interface DrillScenarioPack {
+  stationBrief: string;
+  contextPoints: string[];
+  hiddenInformation: string[];
+  investigationData: string[];
+  openingStatement: string;
+}
+
+const DRILL_BRIEF_PREFIX: Record<DrillId, string> = {
+  agenda_setting:
+    "You are seeing a patient in a busy rural mixed-billing clinic with a 15-minute appointment that has already started late.",
+  ice_elicitation:
+    "You are in the first 2 minutes of a GP consultation and need to understand the patient's ideas, concerns, and expectations before planning tests or treatment.",
+  focused_hypothesis_history:
+    "You have approximately 4-5 minutes to run a focused, hypothesis-driven history and prioritise discriminating questions over exhaustive checklisting.",
+  red_flag_triage:
+    "You are the first-contact GP and must recognise danger features quickly, communicate urgency clearly, and explain immediate escalation actions.",
+  problem_representation:
+    "This station is a synthesis checkpoint: convert a messy consultation into one high-quality problem representation before management decisions.",
+  differential_ranking:
+    "This station tests whether you can rank likely and cannot-miss diagnoses explicitly, then tie that ranking to immediate safe actions.",
+  investigation_justification:
+    "You must choose and sequence evidence-based first-line investigations, balancing diagnostic yield, safety, and avoiding shotgun over-testing.",
+  shared_decision_disagreement:
+    "A disagreement is active. Your task is to preserve therapeutic alliance while negotiating a safe and documented plan.",
+  risk_communication_plain_language:
+    "You must explain uncertainty and probability in plain language, avoiding false reassurance and technical jargon.",
+  chunk_and_check:
+    "You are explaining results and plans to a patient who feels overwhelmed; deliver information in small chunks and check understanding repeatedly.",
+  safety_netting:
+    "You are near consultation close and must give explicit deterioration advice with clear thresholds for review vs emergency care.",
+  uncertainty_language:
+    "The diagnosis is not yet definitive. You must communicate uncertainty safely while preserving trust and direction.",
+  closing_summary:
+    "This is the final minute of the consultation: summarise agreed actions, verify understanding, and confirm contingencies.",
+  opportunistic_prevention:
+    "You need to introduce one high-yield prevention action without derailing the patient's presenting agenda.",
+};
+
+const DRILL_CONTEXT_ADDONS: Record<DrillId, string[]> = {
+  agenda_setting: [
+    "The patient has prepared a written list and is anxious that previous doctors did not address all concerns.",
+    "Your expected behaviour: acknowledge all concerns, summarise them back, ask what matters most now, and agree what can be deferred safely.",
+  ],
+  ice_elicitation: [
+    "The patient may ask about frightening diagnoses unless you actively explore their ideas and worries.",
+    "A pass requires explicit ICE elicitation before moving into explanation-heavy counselling.",
+  ],
+  focused_hypothesis_history: [
+    "You are assessed on early discriminating questions and explicit red-flag exclusion.",
+    "Avoid broad low-yield question lists that consume time without changing diagnostic probability.",
+  ],
+  red_flag_triage: [
+    "You are assessed on urgency language, transfer instructions, and practical immediate actions.",
+    "Do not minimise risk when high-consequence diagnoses remain plausible.",
+  ],
+  problem_representation: [
+    "Your one-liner should include demographics, timeframe, key positives/negatives, and risk/severity signal.",
+    "The representation should clearly justify your immediate next diagnostic or management step.",
+  ],
+  differential_ranking: [
+    "You should state most likely, alternatives, and cannot-miss diagnosis explicitly.",
+    "Ranking should be linked to urgency and next investigations/management.",
+  ],
+  investigation_justification: [
+    "Patients in these variants often request broad testing; you are expected to explain why some tests are not first-line yet.",
+    "Safety is maintained through staged testing plus clear follow-up contingencies.",
+  ],
+  shared_decision_disagreement: [
+    "A pass requires value exploration before persuasion and collaborative compromise language.",
+    "Documented safety-net and review timing are essential when disagreement persists.",
+  ],
+  risk_communication_plain_language: [
+    "Use frequencies or plain comparisons if helpful, but avoid over-certainty.",
+    "Finish by linking risk explanation to concrete next actions and timing.",
+  ],
+  chunk_and_check: [
+    "You are expected to explain concrete investigation results and treatment implications, not generic reassurance.",
+    "At least one understanding check or teach-back should be naturally integrated.",
+  ],
+  safety_netting: [
+    "State what to watch for, what to do, and how soon to seek help at each escalation level.",
+    "Advice should be actionable overnight and in rural after-hours contexts where relevant.",
+  ],
+  uncertainty_language: [
+    "You are scored on transparent uncertainty without abandoning direction or safety.",
+    "Avoid dismissive phrases and absolute statements.",
+  ],
+  closing_summary: [
+    "A pass includes recap, understanding check, and explicit follow-up/contingency timing.",
+    "The close should feel collaborative rather than rushed.",
+  ],
+  opportunistic_prevention: [
+    "Introduce one relevant preventive intervention with patient-centred framing.",
+    "Avoid overloading the patient with multiple prevention agendas in this short station.",
+  ],
+};
+
+const INVESTIGATION_PACKS: Partial<Record<string, string[]>> = {
+  cc_1: [
+    "HbA1c 71 mmol/mol (8.7%), fasting glucose 10.4 mmol/L",
+    "eGFR 88 mL/min/1.73m2, urine ACR mildly elevated",
+    "Lipids: LDL 3.2 mmol/L, TG 2.1 mmol/L",
+  ],
+  cc_2: [
+    "ECG: atrial fibrillation with ventricular rate 118 bpm",
+    "TSH normal, electrolytes normal, creatinine normal",
+    "CHA2DS2-VASc risk high enough to recommend anticoagulation",
+  ],
+  cc_3: [
+    "eGFR 46 mL/min/1.73m2 (persistent on repeat testing)",
+    "Urine ACR moderately elevated",
+    "Potassium 5.1 mmol/L, BP above target",
+  ],
+  cc_4: [
+    "Recent ED visit for asthma exacerbation treated with nebulisers and oral steroids",
+    "Current inhaler technique errors noted by nurse",
+    "Peak flow variability high over 2 weeks",
+  ],
+  cc_5: [
+    "Home blood pressure average 152/94 mmHg over 2 weeks",
+    "U&Es and creatinine baseline normal",
+    "Cardiovascular risk factors: obesity, family history, sedentary work",
+  ],
+  ij_1: [
+    "No red flags on history/examination",
+    "Recent stress, poor sleep, and reduced activity may contribute to symptoms",
+    "Initial high-yield tests should be prioritised before second-line imaging",
+  ],
+  ij_2: [
+    "Intermittent abdominal pain with stable observations and no peritonism",
+    "No GI bleeding, weight loss, persistent vomiting, or fever",
+    "Plan should justify first-line bloods/stool/targeted review over immediate CT/MRI",
+  ],
+  ij_3: [
+    "Thyroid nodule palpated; ultrasound features are concerning for malignancy risk",
+    "No airway compromise or stridor currently",
+    "Sequence expected: risk stratification investigations then targeted specialist referral",
+  ],
+  ij_4: [
+    "Older patient with polypharmacy, orthostatic symptoms, and recent near-falls",
+    "No focal neurological deficits currently",
+    "Prioritise high-yield cardiovascular/medication review before broad low-yield scans",
+  ],
+  ij_5: [
+    "Abnormal LFTs noted incidentally, patient currently asymptomatic",
+    "Alcohol intake moderate; medication history includes potential hepatotoxic contributors",
+    "Plan should stage testing logically before reflexive broad imaging panels",
+  ],
+  pr_5: [
+    "Capillary ketones elevated, random glucose high",
+    "Mild dehydration signs, tachypnoea, abdominal pain",
+    "Long transfer time to tertiary centre due to rural distance",
+  ],
+};
+
+export function buildDrillScenarioPack(
+  drill: DrillDefinition,
+  variant: DrillVariant
+): DrillScenarioPack {
+  const contextPoints = [
+    ...(DRILL_CONTEXT_ADDONS[drill.id] ?? []),
+    ...(variant.keyContextPoints ?? []),
+  ];
+  const hiddenInformation = variant.hiddenInformation ?? [
+    "The patient will disclose additional relevant details only if asked directly and empathically.",
+    "If the candidate skips summarising/prioritising, the patient remains uncertain and may repeat concerns.",
+  ];
+  const investigationData = [
+    ...(variant.investigationData ?? []),
+    ...(INVESTIGATION_PACKS[variant.id] ?? []),
+  ];
+
+  const stationBrief = [
+    DRILL_BRIEF_PREFIX[drill.id],
+    `Scenario: ${variant.scenario}`,
+    variant.stationSetting ? `Setting detail: ${variant.stationSetting}` : null,
+    variant.patientProfile ? `Patient profile: ${variant.patientProfile}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  return {
+    stationBrief,
+    contextPoints,
+    hiddenInformation,
+    investigationData,
+    openingStatement: variant.openingPrompt,
+  };
 }

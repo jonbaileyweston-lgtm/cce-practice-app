@@ -1,5 +1,7 @@
 import type { Case, Message } from "@/types";
 import { getExaminerPersonaForCase } from "@/lib/voicePersonas";
+import type { DrillDefinition, DrillVariant } from "@/data/drills";
+import { buildDrillScenarioPack } from "@/data/drills";
 
 /**
  * Builds the system prompt for the CCE examiner role.
@@ -263,5 +265,60 @@ export function formatTranscriptForEvaluation(messages: Message[]): string {
       const qLabel = m.questionNumber ? ` [Q${m.questionNumber}]` : "";
       return `${role}${qLabel}: ${m.content}`;
     })
+    .join("\n\n");
+}
+
+export interface DrillMessage {
+  role: "patient" | "candidate";
+  content: string;
+}
+
+export function buildDrillPatientSystemPrompt(
+  drill: DrillDefinition,
+  variant: DrillVariant
+): string {
+  const scenarioPack = buildDrillScenarioPack(drill, variant);
+  const contextPoints = scenarioPack.contextPoints.map((p) => `- ${p}`).join("\n");
+  const hiddenItems = scenarioPack.hiddenInformation.map((p) => `- ${p}`).join("\n");
+  const investigations =
+    scenarioPack.investigationData.length > 0
+      ? scenarioPack.investigationData.map((p) => `- ${p}`).join("\n")
+      : "- No investigation results are volunteered unless the candidate asks for explanation or clarification.";
+
+  return `You are roleplaying a patient in a RACGP communication mini-drill.
+
+DRILL: ${drill.title}
+TARGET SKILL: ${drill.targetSkill}
+
+STATION BRIEF:
+${scenarioPack.stationBrief}
+
+CONTEXT CUES THE PATIENT CAN REVEAL IF ASKED:
+${contextPoints}
+
+HIDDEN INFORMATION (ONLY IF DIRECTLY ASKED):
+${hiddenItems}
+
+RELEVANT INVESTIGATION/RESULT CONTEXT:
+${investigations}
+
+OPENING STATEMENT:
+${scenarioPack.openingStatement}
+
+ROLEPLAY RULES:
+1. Stay in patient role, natural everyday language only.
+2. Keep replies concise (1-4 sentences unless asked for detail).
+3. Reveal details progressively in response to candidate questions; do not dump everything at once.
+4. Do not provide teaching points, station labels, or checklist wording.
+5. If the candidate summarises and negotiates priorities, respond with clear patient preference.
+6. If candidate asks what matters most, answer directly based on your concerns.
+7. If candidate asks to check understanding, respond honestly about what is still unclear.
+8. If candidate closes the consultation, end naturally and politely.`;
+}
+
+export function formatDrillTranscriptForEvaluation(messages: DrillMessage[]): string {
+  return messages
+    .filter((m) => m.content.trim().length > 0)
+    .map((m) => `${m.role === "patient" ? "PATIENT" : "CANDIDATE"}: ${m.content}`)
     .join("\n\n");
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CaseCard from "@/components/CaseCard";
 import { CASES } from "@/data/cases";
 import type { PerformancePattern, RacgpDomain } from "@/types";
@@ -64,18 +64,23 @@ const ALL_PATTERNS: PerformancePattern[] = [
 
 export default function Home() {
   const [, setRefreshKey] = useState(0);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  const history = getSessionHistory();
-  const reviewCases = getCasesForSpacedRepetition();
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  const history = isHydrated ? getSessionHistory() : [];
+  const reviewCases = isHydrated ? getCasesForSpacedRepetition() : [];
   const sessions: Record<string, SessionRecord | undefined> = {};
   const counts: Record<string, number> = {};
   for (const c of CASES) {
-    sessions[c.id] = getLastSessionForCase(c.id);
-    counts[c.id] = getCompletedCountForCase(c.id);
+    sessions[c.id] = isHydrated ? getLastSessionForCase(c.id) : undefined;
+    counts[c.id] = isHydrated ? getCompletedCountForCase(c.id) : 0;
   }
   const sessionHistory = history;
-  const domainSummaries = getDomainSummaries();
-  const patternSummaries = getPatternSummaries();
+  const domainSummaries = isHydrated ? getDomainSummaries() : [];
+  const patternSummaries = isHydrated ? getPatternSummaries() : [];
   const reviewCaseIds = new Set(reviewCases.map((c) => c.id));
   const lastSessions = sessions;
   const completedCounts = counts;

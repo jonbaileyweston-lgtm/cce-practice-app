@@ -1,9 +1,11 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { getDrillById } from "@/data/drills";
+import { buildDrillScenarioPack, getDrillById } from "@/data/drills";
 import { notFound } from "next/navigation";
+import { useWhisperSTT } from "@/hooks/useWhisperSTT";
+import { useOpenAITTS } from "@/hooks/useOpenAITTS";
 
 type DrillMessage = {
   role: "patient" | "candidate";
@@ -27,59 +29,210 @@ export default function DrillPage({
   const drill = getDrillById(id);
   if (!drill) notFound();
 
-  const pickVariant = () =>
+  const pickRandomVariant = () =>
     drill.variants[Math.floor(Math.random() * drill.variants.length)];
 
-  const [variant, setVariant] = useState(pickVariant());
+  // Keep initial SSR and client render deterministic to avoid hydration mismatches.
+  const [variant, setVariant] = useState(drill.variants[0]);
+  const scenarioPack = buildDrillScenarioPack(drill, variant);
   const [messages, setMessages] = useState<DrillMessage[]>([
-    { role: "patient", content: variant.openingPrompt },
+    { role: "patient", content: scenarioPack.openingStatement },
   ]);
-  const [promptIndex, setPromptIndex] = useState(0);
   const [candidateInput, setCandidateInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPatientTyping, setIsPatientTyping] = useState(false);
+  const [streamingText, setStreamingText] = useState<string | null>(null);
+  const [interimText, setInterimText] = useState("");
+  const [useManualMode, setUseManualMode] = useState(false);
+  const [garbledWarning, setGarbledWarning] = useState<string | null>(null);
+  const [isTTSFallback, setIsTTSFallback] = useState(false);
   const [feedback, setFeedback] = useState<DrillFeedback | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [startMs] = useState<number>(Date.now());
+  const [startClockMs, setStartClockMs] = useState<number>(Date.now());
+  const messagesRef = useRef<DrillMessage[]>(messages);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isOneShotProblemRep = drill.id === "problem_representation";
 
-  const canAdvancePrompt = promptIndex < variant.followUpPrompts.length;
+  function extractCompleteSentences(buffer: string): {
+    toSpeak: string;
+    remaining: string;
+  } {
+    const match = /^([\s\S]+[.!?])(?=\s+[A-Z"'])/.exec(buffer);
+    if (!match) return { toSpeak: "", remaining: buffer };
+    return {
+      toSpeak: match[1].trim(),
+      remaining: buffer.slice(match[1].length).trimStart(),
+    };
+  }
 
-  const submitCandidateTurn = () => {
-    const content = candidateInput.trim();
-    if (!content) return;
-    setMessages((prev) => [...prev, { role: "candidate", content }]);
-    setCandidateInput("");
-    setError(null);
-  };
+  const cleanPatientText = (text: string): string =>
+    text.replace(/\s{2,}/g, " ").trim();
 
-  const addFollowUpPrompt = () => {
-    if (!canAdvancePrompt) return;
-    const nextPrompt = variant.followUpPrompts[promptIndex];
-    setMessages((prev) => [...prev, { role: "patient", content: nextPrompt }]);
-    setPromptIndex((i) => i + 1);
-  };
+  const { enqueue, stop: stopSpeaking } = useOpenAITTS({
+    onFallbackActive: () => setIsTTSFallback(true),
+  });
+  const voiceRole = variant.id.endsWith("_5") ? "patient_male" : "patient_female";
 
-  const loadNewScenario = () => {
-    const next = pickVariant();
-    setVariant(next);
-    setMessages([{ role: "patient", content: next.openingPrompt }]);
-    setPromptIndex(0);
-    setCandidateInput("");
-    setFeedback(null);
-    setError(null);
-  };
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
-  const evaluateDrill = async () => {
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streamingText, interimText, isPatientTyping]);
+
+  const streamPatientResponse = useCallback(
+    async (currentMessages: DrillMessage[]) => {
+      setIsPatientTyping(true);
+      setStreamingText(null);
+      setError(null);
+
+      try {
+        const res = await fetch("/api/drills/patient", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            drillId: drill.id,
+            variantId: variant.id,
+            messages: currentMessages,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to get patient response");
+
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let fullText = "";
+        let sentenceBuffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            const data = line.slice(6).trim();
+            if (data === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(data) as { text?: string };
+              if (!parsed.text) continue;
+              fullText += parsed.text;
+              sentenceBuffer += parsed.text;
+              setStreamingText(fullText);
+              setIsPatientTyping(false);
+
+              const { toSpeak, remaining } = extractCompleteSentences(sentenceBuffer);
+              if (toSpeak) {
+                const cleaned = cleanPatientText(toSpeak);
+                if (cleaned) enqueue(cleaned, voiceRole);
+                sentenceBuffer = remaining;
+              }
+            } catch {
+              // Ignore malformed streaming chunks.
+            }
+          }
+        }
+
+        if (sentenceBuffer.trim()) {
+          const cleaned = cleanPatientText(sentenceBuffer);
+          if (cleaned) enqueue(cleaned, voiceRole);
+        }
+
+        const finalText = cleanPatientText(fullText);
+        if (finalText) {
+          const patientMessage: DrillMessage = { role: "patient", content: finalText };
+          const nextMessages = [...messagesRef.current, patientMessage];
+          setMessages(nextMessages);
+          messagesRef.current = nextMessages;
+        }
+      } catch (e) {
+        setError(
+          e instanceof Error
+            ? e.message
+            : "Could not fetch patient response. Please try again."
+        );
+      } finally {
+        setIsPatientTyping(false);
+        setStreamingText(null);
+      }
+    },
+    [drill.id, variant.id, enqueue, voiceRole]
+  );
+
+  const submitCandidateTurn = async (incoming?: string) => {
+    const content = (incoming ?? candidateInput).trim();
+    if (!content || isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
     setFeedback(null);
-    const durationSeconds = Math.max(1, Math.round((Date.now() - startMs) / 1000));
+    setCandidateInput("");
+    stopSpeaking();
+
+    const candidateMessage: DrillMessage = { role: "candidate", content };
+    const nextMessages = [...messagesRef.current, candidateMessage];
+    setMessages(nextMessages);
+    messagesRef.current = nextMessages;
+
+    if (isOneShotProblemRep) {
+      await evaluateDrill(nextMessages);
+      return;
+    }
+
+    await streamPatientResponse(nextMessages);
+    setIsSubmitting(false);
+  };
+
+  const { isListening, isSupported, startListening, stopListening } =
+    useWhisperSTT({
+      onInterimResult: setInterimText,
+      onFinalResult: (transcript) => {
+        setInterimText("");
+        setGarbledWarning(null);
+        void submitCandidateTurn(transcript);
+      },
+      onGarbledResult: (message) => {
+        setGarbledWarning(message);
+        setInterimText("");
+      },
+      onError: (sttError) => {
+        setError(sttError);
+        setUseManualMode(true);
+      },
+    });
+
+  const loadNewScenario = () => {
+    const next = pickRandomVariant();
+    setVariant(next);
+    const nextPack = buildDrillScenarioPack(drill, next);
+    setMessages([{ role: "patient", content: nextPack.openingStatement }]);
+    messagesRef.current = [{ role: "patient", content: nextPack.openingStatement }];
+    setCandidateInput("");
+    setFeedback(null);
+    setError(null);
+    setGarbledWarning(null);
+    setStreamingText(null);
+    setInterimText("");
+    setIsPatientTyping(false);
+    setStartClockMs(Date.now());
+    stopSpeaking();
+  };
+
+  const evaluateDrill = async (overrideMessages?: DrillMessage[]) => {
+    setIsSubmitting(true);
+    setError(null);
+    setFeedback(null);
+    const durationSeconds = Math.max(
+      1,
+      Math.round((Date.now() - Math.max(startMs, startClockMs)) / 1000)
+    );
     try {
       const res = await fetch("/api/drills/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           drillId: drill.id,
-          messages,
+          messages: overrideMessages ?? messagesRef.current,
           durationSeconds,
         }),
       });
@@ -116,7 +269,35 @@ export default function DrillPage({
 
       <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
         <h2 className="font-semibold text-blue-900 mb-2">Scenario</h2>
-        <p className="text-sm text-blue-800">{variant.scenario}</p>
+        <p className="text-sm text-blue-800 whitespace-pre-line">
+          {scenarioPack.stationBrief}
+        </p>
+        {scenarioPack.contextPoints.length > 0 && (
+          <div className="mt-3">
+            <p className="text-xs font-semibold text-blue-900 mb-1">Candidate context</p>
+            <ul className="space-y-1">
+              {scenarioPack.contextPoints.map((item, idx) => (
+                <li key={idx} className="text-xs text-blue-800">
+                  • {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {scenarioPack.investigationData.length > 0 && (
+          <div className="mt-3">
+            <p className="text-xs font-semibold text-blue-900 mb-1">
+              Investigations and findings available
+            </p>
+            <ul className="space-y-1">
+              {scenarioPack.investigationData.map((item, idx) => (
+                <li key={idx} className="text-xs text-blue-800">
+                  • {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
@@ -131,11 +312,29 @@ export default function DrillPage({
                   m.role === "patient" ? "text-blue-700" : "text-emerald-700"
                 }`}
               >
-                {m.role === "patient" ? "Patient" : "You"}:
+                {m.role === "patient"
+                  ? isOneShotProblemRep
+                    ? "Examiner"
+                    : "Patient"
+                  : "You"}
+                :
               </span>{" "}
               <span className="text-slate-700">{m.content}</span>
             </div>
           ))}
+          {isPatientTyping && !isOneShotProblemRep && (
+            <p className="text-sm text-slate-500 italic">Patient is responding...</p>
+          )}
+          {streamingText && !isOneShotProblemRep && (
+            <div className="text-sm">
+              <span className="font-semibold text-blue-700">Patient:</span>{" "}
+              <span className="text-slate-700">{streamingText}</span>
+            </div>
+          )}
+          {interimText && (
+            <p className="text-sm text-indigo-700">{interimText}</p>
+          )}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
@@ -146,25 +345,41 @@ export default function DrillPage({
           onChange={(e) => setCandidateInput(e.target.value)}
           rows={4}
           className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Type what you would say to the patient..."
+          placeholder={
+            isOneShotProblemRep
+              ? "Deliver your one-line problem representation..."
+              : "Type what you would say to the patient..."
+          }
+          disabled={isSubmitting || isPatientTyping}
         />
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={submitCandidateTurn}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"
+            onClick={() => void submitCandidateTurn()}
+            disabled={isSubmitting || isPatientTyping}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg"
           >
-            Add response
+            Send response
           </button>
           <button
-            onClick={addFollowUpPrompt}
-            disabled={!canAdvancePrompt}
+            onClick={isListening ? stopListening : startListening}
+            disabled={!isSupported || useManualMode || isSubmitting || isPatientTyping}
             className="bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg"
           >
-            Add follow-up prompt
+            {isListening ? "Stop mic" : "Use microphone"}
+          </button>
+          <button
+            onClick={() => setUseManualMode((prev) => !prev)}
+            className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg"
+          >
+            {useManualMode ? "Enable mic mode" : "Manual mode"}
           </button>
           <button
             onClick={evaluateDrill}
-            disabled={isSubmitting || messages.filter((m) => m.role === "candidate").length === 0}
+            disabled={
+              isSubmitting ||
+              isPatientTyping ||
+              messages.filter((m) => m.role === "candidate").length === 0
+            }
             className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg"
           >
             {isSubmitting ? "Evaluating..." : "Get drill feedback"}
@@ -176,6 +391,16 @@ export default function DrillPage({
             New scenario
           </button>
         </div>
+        {garbledWarning && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            {garbledWarning}
+          </p>
+        )}
+        {isTTSFallback && (
+          <p className="text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2">
+            Voice API unavailable, using browser speech fallback.
+          </p>
+        )}
       </div>
 
       {error && (
