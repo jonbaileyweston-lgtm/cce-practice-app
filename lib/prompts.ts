@@ -95,8 +95,21 @@ ${c.points.map((p) => `  • ${p}`).join("\n")}`
 
   const rubricText = caseData.markingRubric
     .map(
-      (r) =>
-        `  • [${r.code}] ${r.description} (Domain: ${r.domain}) [primary assessment: Q${r.questions.join(", Q")} — credit evidence from ANY question]`
+      (r) => {
+        const primaryWindows = `Q${r.questions.join(", Q")}`;
+        const antiGatingNote =
+          r.antiGatingNote
+          ?? "Q numbers indicate primary windows only. Credit evidence from any question.";
+        const anchorsText =
+          r.behaviouralAnchors && r.behaviouralAnchors.length > 0
+            ? `\n    behavioural anchors:\n${r.behaviouralAnchors.map((a) => `      - ${a}`).join("\n")}`
+            : "";
+        const likertText = r.likertDescriptors
+          ? `\n    likert descriptors:\n      - not_demonstrated: ${r.likertDescriptors.not_demonstrated}\n      - not_clearly_demonstrated: ${r.likertDescriptors.not_clearly_demonstrated}\n      - satisfactorily_demonstrated: ${r.likertDescriptors.satisfactorily_demonstrated}\n      - fully_demonstrated: ${r.likertDescriptors.fully_demonstrated}`
+          : "";
+
+        return `  • [${r.code}] ${r.description} (Domain: ${r.domain}) [primary assessment: ${primaryWindows}]\n    anti-gating: ${antiGatingNote}${anchorsText}${likertText}`;
+      }
     )
     .join("\n");
 

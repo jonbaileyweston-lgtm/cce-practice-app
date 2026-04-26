@@ -1772,6 +1772,206 @@ Edinburgh Postnatal Depression Scale (EPDS) completed in the waiting room: score
   },
 
   // ───────────────────────────────────────────────────────────────────────────
+  // GROVES — Rebecca, 26F, Postnatal Depression in a Rural Telehealth Context
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "groves_pnd_telehealth",
+    patientName: "Rebecca GROVES",
+    patientAge: 26,
+    patientGender: "F",
+    presentingComplaint: "Concerned about her 3-month-old daughter's poor sleep and feeling increasingly overwhelmed",
+    topics: ["Postnatal Depression", "Perinatal Mental Health", "Suicide Risk Assessment", "Rural Health", "Shared Decision-Making"],
+    domain: "mental_health",
+    difficulty: "challenging",
+    icpcCode: "P – Psychological",
+    year: "2026",
+    scenario: `This is a telehealth consultation. Rebecca GROVES, 26 years, books to discuss her 3-month-old daughter Olivia's sleep. Olivia wakes 3-4 times overnight and needs feeding or rocking to settle.
+
+Rebecca relocated from interstate at 36 weeks' gestation and now lives in a rural town around 300 km north of the capital city. Pregnancy and delivery were uncomplicated; she delivered at 39 weeks and was discharged day 4.
+
+During the consultation, Rebecca is tearful and focused on infant sleep. The candidate must:
+1) Take an appropriate history, including psychosocial and risk assessment.
+2) Identify and explain the likely diagnosis empathetically.
+3) Provide a comprehensive management plan including non-pharmacological and pharmacological options.
+4) Arrange clear safety-netting and follow-up appropriate to rural context.`,
+    patientRecord: {
+      name: "Rebecca GROVES",
+      age: 26,
+      gender: "Female",
+      pronouns: "She/Her",
+      sexAssignedAtBirth: "Female",
+      indigenousStatus: "Not Aboriginal or Torres Strait Islander",
+      allergies: "Nil known",
+      medications: ["Levonorgestrel 30 mcg daily"],
+      pastHistory: ["G1P1", "Spontaneous vertex delivery at 39 weeks (3 months ago)", "Low mood during high school (no pharmacotherapy)"],
+      socialHistory: {
+        "Partner": "Brad, 29 years, healthy, Australian Army and often busy with work",
+        "Children": "Olivia, 3 months old",
+        "Occupation": "Primary school teacher (currently on maternity leave)",
+        "Living context": "Recently relocated interstate to a rural town, limited local social supports",
+        "Feeding": "Bottle-feeding after early breastfeeding difficulties and nipple pain",
+      },
+      familyHistory: ["Father: hypertension", "Mother: mild hypercholesterolaemia", "Sister Sarah (28): healthy"],
+      smoking: "Non-smoker",
+      alcohol: "Nil",
+      immunisations: ["DTP booster in pregnancy", "Cervical screening normal 3 years ago"],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "How do you approach Rebecca's presenting concern and initial assessment in this telehealth consultation?",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "How do you validate her concern about Olivia's sleep while broadening the history to maternal wellbeing?" },
+          { type: "prompt", text: "What key details about feeding, infant health, and functional impact would you clarify?" },
+          { type: "probe", text: "How do you elicit Rebecca's ideas, concerns, and expectations early in the consultation?" },
+        ],
+      },
+      {
+        number: 2,
+        text: "What focused mental health, psychosocial, and risk history do you need to take next?",
+        timingMinutes: 4,
+        prompts: [
+          { type: "prompt", text: "Which depressive symptoms and psychosocial stressors are essential to assess?" },
+          { type: "must-use", text: "How would you ask directly about suicidal thoughts and thoughts of harm to the infant?" },
+          { type: "probe", text: "How does recent relocation and limited support affect your risk assessment?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "Rebecca asks, 'What do you think is wrong with me?' How do you explain your diagnosis and discuss non-pharmacological treatment?",
+        timingMinutes: 4,
+        prompts: [
+          { type: "prompt", text: "How do you explain moderate to severe postnatal depression empathetically in plain language?" },
+          { type: "prompt", text: "Which psychological and social interventions are appropriate in a rural context?" },
+          { type: "probe", text: "Rebecca thinks she will be fine if Olivia sleeps better - how do you address this misconception without invalidating her?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "How do you discuss medication, follow-up, referral thresholds, and safety-netting for Rebecca and Olivia?",
+        timingMinutes: 4,
+        prompts: [
+          { type: "must-use", text: "Rebecca asks, 'What are the side effects?' and 'Will I get better?' - how do you respond?" },
+          { type: "prompt", text: "What SSRI strategy, duration advice, and review intervals would you propose?" },
+          { type: "probe", text: "How do you structure immediate and ongoing safety-netting in this telehealth setting?" },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "1.4",
+        title: "Communication and engagement are appropriate to person and context",
+        questions: [1, 2],
+        points: [
+          "Effectively engages with Rebecca and communicates with empathy and active listening.",
+          "Elicits ideas, concerns, and expectations while validating maternal distress.",
+          "Uses language appropriate to health literacy and telehealth context.",
+          "Maintains rapport while transitioning from infant sleep concern to maternal mental health assessment.",
+        ],
+      },
+      {
+        code: "2.1",
+        title: "Comprehensive mental health and biopsychosocial history",
+        questions: [1, 2],
+        points: [
+          "Takes an appropriate depression history including low mood, anhedonia, sleep, guilt, and functioning.",
+          "Explores social isolation, partner availability, relocation stress, and practical supports.",
+          "Elicits past psychiatric history and relevant perinatal context.",
+          "Integrates biological, psychological, and social contributors to current presentation.",
+        ],
+      },
+      {
+        code: "2.1",
+        title: "Structured suicide and infant-safety risk assessment",
+        questions: [2],
+        points: [
+          "Performs direct, compassionate screening for suicidal ideation.",
+          "Explicitly asks about thoughts of harming the infant.",
+          "Clarifies immediacy, intent, protective factors, and current safety.",
+          "Uses risk findings to shape urgency and management planning.",
+        ],
+      },
+      {
+        code: "3.1",
+        title: "Diagnostic synthesis and empathetic delivery",
+        questions: [3],
+        points: [
+          "Makes and communicates a diagnosis of moderate to severe postnatal depression.",
+          "Explains diagnosis empathetically with clear rationale from history.",
+          "Addresses patient belief that sleep alone explains all symptoms.",
+          "Demonstrates integrated clinical reasoning in a complex psychosocial setting.",
+        ],
+      },
+      {
+        code: "4.6",
+        title: "Appropriate non-pharmacological management",
+        questions: [3, 4],
+        points: [
+          "Recommends evidence-based psychological therapies such as CBT.",
+          "Discusses support options including PANDA, Beyond Blue, and local/community supports.",
+          "Adapts recommendations to rural access barriers and telehealth options.",
+          "Uses shared decision-making and motivational support to improve engagement.",
+        ],
+      },
+      {
+        code: "4.1",
+        title: "Safe and appropriate pharmacological management",
+        questions: [4],
+        points: [
+          "Discusses SSRI options with an appropriate low-dose start (e.g. sertraline 50 mg).",
+          "Explains common side effects and expected response timeframe.",
+          "Advises likely treatment duration of at least 6-12 months once improved.",
+          "Uses shared decision-making and addresses medication concerns.",
+        ],
+      },
+      {
+        code: "4.8",
+        title: "Safety-netting, review, and escalation planning",
+        questions: [4],
+        points: [
+          "Arranges regular follow-up appointments to review mood and risk.",
+          "Maintains a low threshold for referral to specialist perinatal mental health services.",
+          "Provides clear advice for deterioration and emergency escalation pathways.",
+          "Acknowledges ongoing concern about infant sleep and arranges separate infant-focused review.",
+        ],
+      },
+    ],
+    markingRubric: [
+      { domain: "Communication and consultation skills", domainNumber: 1, code: "1.4", description: "Communication and engagement are appropriate to person and sociocultural context", questions: [1, 2] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.1", description: "A comprehensive biopsychosocial history is taken", questions: [1, 2] },
+      { domain: "Clinical information gathering and interpretation", domainNumber: 2, code: "2.1", description: "An appropriate suicide and infant-safety risk assessment is performed", questions: [2] },
+      { domain: "Diagnosis, decision-making and reasoning", domainNumber: 3, code: "3.1", description: "Integrates and synthesises knowledge to make decisions in complex clinical situations", questions: [3] },
+      { domain: "Clinical management and therapeutic reasoning", domainNumber: 4, code: "4.6", description: "Non-pharmacological therapies are offered and discussed", questions: [3, 4] },
+      { domain: "Clinical management and therapeutic reasoning", domainNumber: 4, code: "4.1", description: "Demonstrates knowledge of therapeutic agents, uses, dosing, and adverse effects", questions: [4] },
+      { domain: "Clinical management and therapeutic reasoning", domainNumber: 4, code: "4.8", description: "A patient-centred management plan with safety-netting and follow-up is developed", questions: [4] },
+    ],
+    debriefNotes: `The competent candidate validates Rebecca's initial concern about infant sleep while promptly broadening to maternal mental health assessment. They take a structured biopsychosocial history and perform direct risk screening for suicidal ideation and thoughts of harming the infant. They diagnose moderate to severe postnatal depression empathetically, correcting the misconception that this is only sleep deprivation. Management combines non-pharmacological care (CBT, peer and perinatal supports, rural-access planning) and pharmacological discussion (e.g. sertraline, side effects, and treatment duration). They provide explicit safety-netting, close follow-up, low threshold for specialist referral, and organise separate review of Olivia's sleep concerns so both mother and infant needs are safely addressed.`,
+    patientPersona: {
+      openingStatement: "I am worried about Olivia's sleeping.",
+      volunteerHistory: [
+        "She wakes three or four times a night and I have to feed or rock her back to sleep.",
+        "I'm tired all the time and I cry a lot, but I think that's just from being exhausted.",
+        "I feel like I've failed as a mother.",
+        "We moved here late in pregnancy and I don't really have support around me yet.",
+        "I switched to bottle feeding because breastfeeding became painful and confusing with different advice.",
+      ],
+      withheldHistory: [
+        "Last week I felt so low that I thought Brad and Olivia might be better off without me.",
+        "I have never had thoughts of harming Olivia.",
+        "I had low mood in high school but never needed medication.",
+      ],
+      ice: {
+        ideas: "I think all of this is from poor sleep and low energy, not depression.",
+        concerns: "I'm worried something is wrong with Olivia and that I'm not coping as a mother.",
+        expectations: "I want help to improve Olivia's sleep and reassurance that I can get better.",
+      },
+      demeanour: "Tearful, exhausted, and self-critical. Initially focused on Olivia's sleep; becomes more open when the GP is calm, validating, and non-judgemental.",
+      responseToJargon: "Understands simple medical terms but responds best to plain, supportive language. If jargon is used, she may become quiet and less engaged.",
+    },
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
   // PATEL — Rohan, 58M, Type 2 Diabetes Review — Chronic Disease Management
   // ───────────────────────────────────────────────────────────────────────────
   {
@@ -4056,6 +4256,981 @@ Bill is currently asymptomatic and asks directly what the results mean and wheth
       },
       demeanour: "Calm and pragmatic, mildly defensive if he feels judged about lifestyle. Becomes engaged when advice is specific, respectful, and outcome-focused.",
       responseToJargon: "Comfortable with basic health terms but needs plain-language explanation for transaminitis, steatosis, fibrosis risk, and steatohepatitis.",
+    },
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // MCDONALD — Ben, 38M, Major Depression with Acute Suicide Risk
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "mcdonald_depression_anaesthetist",
+    patientName: "Ben MCDONALD",
+    patientAge: 38,
+    patientGender: "M",
+    presentingComplaint: "Follow-up for severe depression and anxiety with new suicidal ideation",
+    topics: ["Major Depression", "Suicide Risk Assessment", "Doctor Health", "Mandatory Reporting"],
+    domain: "mental_health",
+    difficulty: "complex",
+    icpcCode: "P – Psychological",
+    year: "2026",
+    scenario: `Ben MCDONALD, 38 years, attends for scheduled follow-up after diagnosis of a major depressive episode and worsening anxiety symptoms four weeks ago.
+
+At that consultation, sertraline 50 mg daily was commenced. Ben has been reviewed twice in the past month. A full physical examination and blood tests showed no abnormalities.
+
+At the last review, DASS-21 scores were in the extremely severe / severe / severe range, and K10 was 45 (very high psychological distress). You advised Ben to take time off work.
+
+Observations from last consult:
+• Blood pressure 124/82 mmHg
+• Heart rate 80 bpm
+• BMI 23.3
+
+Today, Ben says he is due back at work tomorrow and is worried he might do something to himself.
+
+Tasks:
+1) Take an appropriate history.
+2) Explain your management plan to the patient.`,
+    patientRecord: {
+      name: "Ben MCDONALD",
+      age: 38,
+      gender: "Male",
+      pronouns: "He/Him",
+      sexAssignedAtBirth: "Male",
+      indigenousStatus: "Not Aboriginal or Torres Strait Islander",
+      allergies: "Nil known allergies",
+      medications: ["Sertraline 50 mg once daily", "Ventolin 100 mcg, 2 puffs PRN"],
+      pastHistory: [
+        "Major depression diagnosed 3 months ago",
+        "Generalised anxiety disorder with panic episodes diagnosed 10 years ago",
+        "Mild episodic childhood asthma",
+      ],
+      socialHistory: {
+        Relationship: "Separated from ex-partner Claudia (relationship breakdown 8 months ago)",
+        Living: "Lives alone",
+        Children: "Daisy (2 years) lives with ex-partner 1 hour away",
+        Occupation: "Anaesthetic registrar",
+      },
+      familyHistory: [
+        "Father (74): hypertension",
+        "Mother (70): asthma and postnatal depression",
+        "Sister Angela (43): atopic dermatitis",
+      ],
+      smoking: "Non-smoker",
+      alcohol: "2-6 standard drinks most nights, sometimes more",
+      immunisations: ["Vaccinations up to date"],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "Take a focused history of Ben's current symptoms, treatment response, and psychosocial context.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "What changes has Ben noticed in mood, sleep, appetite, and functioning since starting treatment?" },
+          { type: "probe", text: "How would you explore stressors related to work, relationships, and supports?" },
+        ],
+      },
+      {
+        number: 2,
+        text: "Assess immediate and short-term risk, including suicidality, access to means, protective factors, and substance use.",
+        timingMinutes: 4,
+        prompts: [
+          { type: "must-use", text: "Can you talk me through exactly what thoughts you've had about harming yourself, including any specific plans?" },
+          { type: "prompt", text: "What factors are currently stopping him from acting on suicidal thoughts?" },
+          { type: "probe", text: "How would you assess alcohol use in relation to acute risk?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "Address Ben's concern about AHPRA reporting and explain your professional obligations.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "must-use", text: "Ben asks: 'Do you need to report me now I have a diagnosis?'" },
+          { type: "probe", text: "How do you explain mandatory reporting thresholds while preserving therapeutic trust?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "Provide a safe, patient-centred management plan including medication, non-pharmacological care, safety planning, and follow-up.",
+        timingMinutes: 5,
+        prompts: [
+          { type: "prompt", text: "What medication change is first-line at this stage of SSRI treatment?" },
+          { type: "prompt", text: "What specific components should be included in a collaborative safety plan for today?" },
+          { type: "probe", text: "What review interval and escalation instructions are required if he is managed at home?" },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "1.4",
+        title: "Communication, reflection, and active listening",
+        questions: [1, 2],
+        points: [
+          "Effectively engage with the patient, using appropriate methods of questioning, reflection, and active listening.",
+        ],
+      },
+      {
+        code: "2.1",
+        title: "Focused history and risk factors",
+        questions: [1, 2],
+        points: [
+          "Ask open and focussed questions to elucidate relevant symptoms and triggers.",
+          "Elicit risk factors for suicide and protective factors.",
+          "Assess risk of safety for others.",
+        ],
+      },
+      {
+        code: "10.1",
+        title: "A significantly ill patient is identified",
+        questions: [2],
+        points: [
+          "Recognise and explicitly identify acute suicide risk as significant illness requiring immediate risk-focused management.",
+          "Assess suicidal ideation, intent, plan, means access, and protective factors to determine short-term safety.",
+          "Use risk findings to guide immediate safety planning and escalation decisions.",
+        ],
+      },
+      {
+        code: "6.3",
+        title: "Professionalism and AHPRA reassurance",
+        questions: [3],
+        points: [
+          "Reassure patient that this is not a case needing reporting to AHPRA as he is not putting the public at risk.",
+        ],
+      },
+      {
+        code: "4.1",
+        title: "Pharmacological management",
+        questions: [4],
+        points: [
+          "Institute appropriate pharmacological management: first line is increased dose of current medication sertraline from 50 mg to 100 mg.",
+        ],
+      },
+      {
+        code: "4.7",
+        title: "Safety plan and non-pharmacological management",
+        questions: [4],
+        points: [
+          "Create a safety plan: be aware of warning signs.",
+          "Create a safe environment.",
+          "Identify reasons to live.",
+          "Identify internal coping strategies and socialisation strategies.",
+          "Refer to psychologist for CBT/ACT/IPT and consider e-therapy as an adjunct.",
+        ],
+      },
+      {
+        code: "4.8",
+        title: "Follow-up and safety-netting",
+        questions: [4],
+        points: [
+          "Arrange review and follow up after establishing safety to go home.",
+        ],
+      },
+    ],
+    markingRubric: [
+      {
+        domain: "Communication and consultation skills",
+        domainNumber: 1,
+        code: "1.4",
+        description: "Communication is appropriate to the person and sociocultural context",
+        questions: [1, 2],
+        title: "Communication and engagement",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Communication is appropriate to the person and sociocultural context.",
+          "Matches modality of communication to patient needs, health literacy and context.",
+          "Demonstrates active listening skills.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to establish rapport or active listening, and responds in a dismissive or judgemental way to distress.",
+          not_clearly_demonstrated: "Shows some empathy but does not consistently tailor communication to severe distress or consultation context.",
+          satisfactorily_demonstrated: "Uses active listening and reflective communication to build rapport and support disclosure.",
+          fully_demonstrated: "Expertly adapts communication to a medically literate but acutely distressed patient, balancing empathy and professional structure.",
+        },
+      },
+      {
+        domain: "Clinical information gathering and interpretation",
+        domainNumber: 2,
+        code: "2.1",
+        description: "A comprehensive biopsychosocial history is taken",
+        questions: [1, 2],
+        title: "Clinical information gathering",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "A comprehensive biopsychosocial history is taken from the patient.",
+          "Explores recent mood, sleep, appetite, and treatment response.",
+          "Explores side effects and efficacy of initial treatment commenced 4 weeks ago.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to explore core depressive symptoms and treatment response.",
+          not_clearly_demonstrated: "Gathers partial history but misses major psychosocial stressors, risk contributors, or alcohol use.",
+          satisfactorily_demonstrated: "Obtains a comprehensive biopsychosocial history including symptoms, treatment response, stressors, and alcohol use.",
+          fully_demonstrated: "Systematically and efficiently elicits the full biopsychosocial picture and clinical trajectory.",
+        },
+      },
+      {
+        domain: "Identifying and managing the patient with significant illness",
+        domainNumber: 10,
+        code: "10.1",
+        description: "A significantly ill patient is identified",
+        questions: [2],
+        title: "Risk assessment",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "A significantly ill patient is identified.",
+          "Explores risk factors for suicide and protective factors.",
+          "Explores risk of safety for others.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to ask directly about suicidal ideation or intent.",
+          not_clearly_demonstrated: "Identifies suicidality but does not adequately assess plan specificity, means access, or protective factors.",
+          satisfactorily_demonstrated: "Assesses ideation, intent, plan, means, and protective factors, identifying key immediate risks.",
+          fully_demonstrated: "Performs nuanced and comprehensive risk formulation, including profession-specific access to lethal means and risk modifiers.",
+        },
+      },
+      {
+        domain: "Professionalism",
+        domainNumber: 6,
+        code: "6.3",
+        description: "Appropriately manages ethical dilemmas that arise",
+        questions: [3],
+        title: "Professionalism and AHPRA reporting",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Appropriately manages ethical dilemmas that arise.",
+          "Reassures that this is not a case requiring mandatory AHPRA reporting in the current context.",
+          "Identifies and manages duty-of-care obstacles.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Gives incorrect advice about mandatory reporting or ignores the patient's concern.",
+          not_clearly_demonstrated: "Acknowledges concern but provides vague or uncertain legal-professional guidance.",
+          satisfactorily_demonstrated: "Accurately explains reporting threshold and reassures appropriately in context.",
+          fully_demonstrated: "Provides clear, lawful, and psychologically safe explanation that preserves trust and professional accountability.",
+        },
+      },
+      {
+        domain: "Clinical management and therapeutic reasoning",
+        domainNumber: 4,
+        code: "4.1",
+        description: "Demonstrates knowledge of therapeutic agents, uses, dosages and adverse effects",
+        questions: [4],
+        title: "Pharmacological management",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Demonstrates knowledge of common therapeutic agents, uses, dosages and adverse effects.",
+          "Increases sertraline dose from 50 mg to 100 mg as first-line adjustment.",
+          "Addresses alcohol use as a clinically relevant risk factor.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "No safe or appropriate pharmacological plan is provided.",
+          not_clearly_demonstrated: "Medication plan is incomplete, poorly justified, or not integrated with risk context.",
+          satisfactorily_demonstrated: "Appropriately recommends sertraline dose increase and provides practical monitoring and counselling.",
+          fully_demonstrated: "Integrates dose optimisation, adverse-effect monitoring, and alcohol-risk counselling into a clear shared plan.",
+        },
+      },
+      {
+        domain: "Clinical management and therapeutic reasoning",
+        domainNumber: 4,
+        code: "4.7",
+        description: "A patient-centred and comprehensive management plan is developed",
+        questions: [4],
+        title: "Safety planning and non-pharmacological management",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Creates a safety plan covering warning signs, safe environment, and reasons to live.",
+          "Provides doctor-specific mental health support resources.",
+          "Refers to psychologist for CBT/ACT/IPT.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to create a safety plan or arrange non-pharmacological supports.",
+          not_clearly_demonstrated: "Suggests supports but safety planning is non-specific or not actionable.",
+          satisfactorily_demonstrated: "Creates a collaborative and actionable safety plan and arranges appropriate psychological support.",
+          fully_demonstrated: "Builds a highly specific, personalised safety framework with practical means-restriction and immediate support activation.",
+        },
+      },
+      {
+        domain: "Clinical management and therapeutic reasoning",
+        domainNumber: 4,
+        code: "4.8",
+        description: "Safety-netting and specific follow-up arrangements are made",
+        questions: [4],
+        title: "Safety-netting and follow-up",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "A patient-centred and comprehensive management plan is developed.",
+          "Arranges review and follow up after establishing safety to go home.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to provide safety-netting or timely follow-up despite acute risk.",
+          not_clearly_demonstrated: "Provides follow-up but timing and escalation plan are inadequate for current risk.",
+          satisfactorily_demonstrated: "Provides clear safety-net instructions and prompt follow-up after confirming immediate safety.",
+          fully_demonstrated: "Implements robust short-interval review, confirms support activation, and gives explicit crisis escalation pathways.",
+        },
+      },
+    ],
+    debriefNotes: `The competent candidate rapidly establishes empathic rapport and performs a direct, structured suicide risk assessment, including intent, plan, means access, protective factors, and alcohol-related risk amplification. They identify the profession-specific access to fentanyl and propofol as a major risk issue, while recognising current protective factors and confirming immediate safety requirements. They explain mandatory reporting thresholds accurately and reassure Ben that in the current context he does not automatically meet mandatory reporting criteria. Management includes increasing sertraline from 50 mg to 100 mg, arranging psychological care, creating a collaborative written safety plan, and organising close review within 24-48 hours with explicit crisis escalation advice.`,
+    patientPersona: {
+      openingStatement: "I don't think I can go back to work tomorrow; I'm worried I might do something to myself.",
+      volunteerHistory: [
+        "I was hoping the medication would have worked by now, but I feel worse.",
+        "My sleep is poor and my appetite has dropped.",
+        "I feel like a failure and like I'm letting my colleagues down.",
+        "I'm scared I'll make a mistake if I go back to work.",
+      ],
+      withheldHistory: [
+        "He has thought about self-cannulating and using fentanyl/propofol from work.",
+        "He has thought about driving off the side of the road on the way home.",
+        "He is drinking 6-8 standard drinks of spirits most nights to sleep.",
+        "Protective factors include not wanting to leave daughter Daisy without a father and concern about his cat.",
+      ],
+      ice: {
+        ideas: "I think I'm failing and not coping, and maybe everyone would be better off without me.",
+        concerns: "I'm worried I might actually harm myself and that this will ruin my medical career.",
+        expectations: "I need a clear plan to keep me safe and I want to know what this means for work and reporting.",
+      },
+      demeanour: "Profoundly distressed, ashamed, and exhausted. Intelligent and medically literate in work-related discussion, but emotionally fragile and fearful.",
+      responseToJargon: "Comfortable with medical terminology related to anaesthetic practice and medication discussions, but still needs clear, plain explanations for plans and legal obligations.",
+    },
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  // OLDFIELD — Nicole, 45F, Haematemesis with alcohol dependence context
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "oldfield_haematemesis_alcohol",
+    patientName: "Nicole OLDFIELD",
+    patientAge: 45,
+    patientGender: "F",
+    presentingComplaint: "Vomiting blood this morning (streaks of bright red blood).",
+    topics: ["Haematemesis", "Alcohol dependence", "Motivational interviewing", "Preventive care"],
+    domain: "undifferentiated",
+    difficulty: "challenging",
+    icpcCode: "D - Digestive",
+    year: "2026 (generated)",
+    scenario: `Nicole OLDFIELD, 45 years, has come to see you regarding vomiting blood this morning.
+
+Practice nurse observations while waiting:
+- Temperature 36.7 C
+- Blood pressure 128/85 mmHg
+- Heart rate 85/min
+- Height 164 cm
+- Weight 64 kg
+- BMI 23.8
+
+Perform the following tasks:
+1. Take an appropriate history.
+2. Formulate a differential diagnosis.
+3. Outline your management plan.
+4. Address the patient's concerns.`,
+    patientRecord: {
+      name: "Nicole OLDFIELD",
+      age: 45,
+      gender: "Female",
+      pronouns: "She/Her",
+      sexAssignedAtBirth: "Female",
+      indigenousStatus: "Not stated",
+      allergies: "Penicillin - Anaphylaxis",
+      medications: [
+        "Venlafaxine 75 mg daily",
+        "Levothyroxine 100 mcg daily",
+        "Ethinylestradiol/Levonorgestrel (Levlen ED) 30 mcg/150 mcg daily",
+        "Vitamin D 1000 IU daily",
+      ],
+      pastHistory: [
+        "Hypothyroidism (diagnosed 3 years ago)",
+        "Depression (diagnosed 5 years ago)",
+        "Elective lower segment Caesarean section 13 years ago (G1P1)",
+      ],
+      socialHistory: {
+        "Relationship": "Separated from ex-partner with past domestic violence history",
+        "Children": "Daughter Naya, 13 years",
+        "Occupation": "Office Administrator",
+      },
+      familyHistory: [
+        "Father (77): Type 2 diabetes",
+        "Mother (75): Hypertension",
+        "Brother (42): Well",
+      ],
+      smoking: "15 cigarettes per day for 25 years",
+      alcohol: "File states 2 standard drinks/week, but actual intake is approximately one 750 mL bottle of wine nightly",
+      immunisations: [
+        "Influenza vaccination 6 months ago",
+        "dTpa 13 years ago",
+        "Cervical screening test 13 years ago (no abnormality detected)",
+      ],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "Take a focused history for Nicole's haematemesis, including key red-flag symptoms and immediate severity assessment.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "Can you clarify what the vomit looked like and how much blood there was?" },
+          { type: "probe", text: "What associated symptoms would you ask about to assess severity and potential GI bleeding risk?" },
+        ],
+      },
+      {
+        number: 2,
+        text: "Elicit the psychosocial context, including alcohol use, smoking, and stressors that may be driving current risk.",
+        timingMinutes: 4,
+        prompts: [
+          { type: "probe", text: "How would you reconcile the discrepancy between the recorded alcohol history and a potentially different actual intake?" },
+          { type: "prompt", text: "What specific questions would you ask about mental health, safety, and domestic violence context?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "Discuss your provisional diagnosis, key differentials, and rational initial investigations.",
+        timingMinutes: 4,
+        prompts: [
+          { type: "prompt", text: "What are your cannot-miss differentials for haematemesis in this context?" },
+          { type: "probe", text: "Which blood tests and further investigations would you prioritise, and why?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "Provide a negotiated management plan, including alcohol reduction options, lifestyle priorities, and explicit safety-netting and follow-up.",
+        timingMinutes: 4,
+        prompts: [
+          { type: "prompt", text: "How would you structure alcohol withdrawal support, including home detox considerations if appropriate?" },
+          { type: "must-use", text: "Give clear return precautions for worsening bleeding, severe withdrawal, and mood deterioration, and state your follow-up timeframe." },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "1.4",
+        title: "Communication and patient engagement",
+        questions: [1, 2],
+        points: [
+          "Communication is appropriate to the person and sociocultural context.",
+          "Engages the patient to gather symptoms, ideas, concerns, and expectations.",
+          "Demonstrates active listening and empathy while exploring sensitive stressors.",
+        ],
+      },
+      {
+        code: "2.1",
+        title: "Biopsychosocial history taking",
+        questions: [1, 2],
+        points: [
+          "Takes a comprehensive biopsychosocial history including GI bleeding red flags.",
+          "Clarifies true alcohol intake and smoking burden.",
+          "Explores psychological distress and domestic violence context safely.",
+        ],
+      },
+      {
+        code: "3.6",
+        title: "Differential diagnosis formulation",
+        questions: [3],
+        points: [
+          "Forms a rational differential including likely, less likely, and cannot-miss diagnoses.",
+          "Includes causes such as acute gastritis and Mallory-Weiss tear.",
+          "Includes serious causes such as varices and chronic liver disease complications.",
+        ],
+      },
+      {
+        code: "2.6",
+        title: "Rational investigations",
+        questions: [3],
+        points: [
+          "Chooses evidence-based blood tests including FBC, liver enzymes, and coagulation profile.",
+          "Considers iron studies and B12/folate where clinically relevant.",
+          "Considers abdominal imaging and endoscopic pathways where indicated.",
+        ],
+      },
+      {
+        code: "4.4",
+        title: "Clinical management of alcohol withdrawal risk",
+        questions: [4],
+        points: [
+          "Discusses safe therapeutic options aligned with patient needs.",
+          "Considers supervised home detox suitability and thiamine prophylaxis.",
+          "Discusses longer-term pharmacotherapy options after cessation.",
+        ],
+      },
+      {
+        code: "5.8",
+        title: "Preventive health and lifestyle modification",
+        questions: [4],
+        points: [
+          "Uses motivational strategies to support behaviour change.",
+          "Provides practical diet and activity advice.",
+          "Handles smoking discussion respectfully when patient is pre-contemplative.",
+        ],
+      },
+      {
+        code: "4.1",
+        title: "Safety-netting and follow-up",
+        questions: [4],
+        points: [
+          "Provides explicit deterioration advice for recurrent haematemesis.",
+          "Explains warning signs of severe alcohol withdrawal and mood deterioration.",
+          "Arranges clear and close follow-up during early management.",
+        ],
+      },
+    ],
+    markingRubric: [
+      {
+        domain: "Communication and consultation skills",
+        domainNumber: 1,
+        code: "1.4",
+        description: "Communication and patient engagement",
+        questions: [1, 2],
+        title: "Communication and patient engagement",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Communication is appropriate to the person and the sociocultural context.",
+          "Engages the patient to gather information about symptoms, ideas, concerns, and expectations.",
+          "Demonstrates active listening skills.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to build rapport and uses dismissive or inappropriate communication.",
+          not_clearly_demonstrated: "Shows basic communication but misses key cues around distress or ICE.",
+          satisfactorily_demonstrated: "Uses active listening and empathetic communication to establish shared understanding.",
+          fully_demonstrated: "Builds strong non-judgmental rapport that enables full disclosure of sensitive alcohol and trauma history.",
+        },
+      },
+      {
+        domain: "Clinical information gathering",
+        domainNumber: 2,
+        code: "2.1",
+        description: "Biopsychosocial history taking",
+        questions: [1, 2],
+        title: "Biopsychosocial history taking",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "A comprehensive biopsychosocial history is taken.",
+          "Assesses GI bleeding red flags and relevant symptom negatives.",
+          "Assesses psychological and social context including true alcohol intake and stressors.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "History is superficial and misses major clinical and psychosocial risk factors.",
+          not_clearly_demonstrated: "Identifies some issues but omits key red flags or psychosocial context.",
+          satisfactorily_demonstrated: "Systematically covers red flags, clarifies substance use, and explores psychosocial contributors.",
+          fully_demonstrated: "Efficiently integrates biological and psychosocial risk assessment into a coherent picture.",
+        },
+      },
+      {
+        domain: "Diagnosis, decision-making and reasoning",
+        domainNumber: 3,
+        code: "3.6",
+        description: "Differential diagnosis formulation",
+        questions: [3],
+        title: "Differential diagnosis formulation",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Formulates a rational list of differential diagnoses including cannot-miss diagnoses.",
+          "Identifies likely diagnoses such as Mallory-Weiss tear and acute gastritis.",
+          "Identifies serious causes such as varices and chronic liver disease complications.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to provide a safe or relevant differential diagnosis.",
+          not_clearly_demonstrated: "Provides a narrow differential and misses major high-risk causes.",
+          satisfactorily_demonstrated: "Provides an appropriately prioritised differential including likely and serious causes.",
+          fully_demonstrated: "Provides a comprehensive and clearly reasoned differential explained in patient-appropriate language.",
+        },
+      },
+      {
+        domain: "Clinical information gathering",
+        domainNumber: 2,
+        code: "2.6",
+        description: "Rational investigations",
+        questions: [3],
+        title: "Rational investigations",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Chooses rational investigations using an evidence-based approach.",
+          "Requests relevant blood tests including FBC, liver enzymes, coagulation profile, and iron studies.",
+          "Considers abdominal ultrasound and endoscopic assessment where indicated.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "No appropriate investigation plan is provided.",
+          not_clearly_demonstrated: "Partial investigation plan with key omissions for bleeding and alcohol-related risk.",
+          satisfactorily_demonstrated: "Provides an appropriate and coherent first-line investigation strategy.",
+          fully_demonstrated: "Provides highly targeted investigations with clear clinical justification and sequencing.",
+        },
+      },
+      {
+        domain: "Clinical management and therapeutic reasoning",
+        domainNumber: 4,
+        code: "4.4",
+        description: "Clinical management (alcohol withdrawal)",
+        questions: [4],
+        title: "Clinical management (alcohol withdrawal)",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Outlines therapeutic options selected based on patient needs and risks.",
+          "Discusses home detox feasibility including diazepam taper and thiamine.",
+          "Discusses longer-term relapse prevention options after initial withdrawal period.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Management of alcohol withdrawal risk is unsafe or absent.",
+          not_clearly_demonstrated: "Recognises need for change but lacks safe, practical withdrawal planning.",
+          satisfactorily_demonstrated: "Outlines a safe withdrawal-oriented management plan with key pharmacological supports.",
+          fully_demonstrated: "Provides a well-justified, collaborative and risk-aware alcohol management strategy.",
+        },
+      },
+      {
+        domain: "Preventive and population health",
+        domainNumber: 5,
+        code: "5.8",
+        description: "Preventive health and lifestyle modifications",
+        questions: [4],
+        title: "Preventive health and lifestyle modifications",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Uses appropriate strategies to motivate and assist health behaviour change.",
+          "Addresses smoking status while respecting readiness to change.",
+          "Provides a practical plan for diet and physical activity improvement.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Neglects preventive counselling or approaches behaviour change inappropriately.",
+          not_clearly_demonstrated: "Provides generic preventive advice without tailoring to readiness and context.",
+          satisfactorily_demonstrated: "Provides tailored preventive advice with realistic behaviour goals.",
+          fully_demonstrated: "Uses skilled motivational interviewing to build a staged, patient-centred prevention plan.",
+        },
+      },
+      {
+        domain: "Clinical management and therapeutic reasoning",
+        domainNumber: 4,
+        code: "4.1",
+        description: "Safety-netting and follow-up",
+        questions: [4],
+        title: "Safety-netting and follow-up",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Discusses impact of withdrawal on daily functioning and mood symptoms.",
+          "Provides clear deterioration advice for recurrent haematemesis and severe withdrawal symptoms.",
+          "Arranges close and specific follow-up during early management.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to provide safety-netting or follow-up for potentially serious deterioration.",
+          not_clearly_demonstrated: "Provides incomplete safety advice or non-specific follow-up.",
+          satisfactorily_demonstrated: "Provides clear escalation advice and timely follow-up plan.",
+          fully_demonstrated: "Implements robust, specific safety-netting across bleeding, withdrawal, and mental health risk domains.",
+        },
+      },
+    ],
+    debriefNotes: `A competent candidate takes a focused haematemesis history first to assess immediate risk, then broadens to a biopsychosocial assessment that uncovers the discrepancy between recorded and actual alcohol intake. They formulate a safe differential diagnosis including Mallory-Weiss tear, gastritis, and serious causes such as varices/chronic liver disease, with an appropriate first-line investigation plan (FBC, liver enzymes, coagulation profile, iron studies, and escalation pathways including imaging/endoscopy where indicated). Management is collaborative and realistic: they use motivational interviewing, discuss alcohol reduction and withdrawal planning (including thiamine and supervised detox options), provide practical preventive advice, and conclude with explicit safety-netting and close follow-up for recurrent bleeding, severe withdrawal symptoms, and mood deterioration.`,
+    patientPersona: {
+      openingStatement: "Hello doctor, I have come to see you because I vomited blood this morning.",
+      volunteerHistory: [
+        "There were a few streaks of bright red blood mixed with undigested food.",
+        "I wake up most mornings with a hangover, headache and a sick stomach.",
+        "This is the first time I've vomited blood.",
+        "I've been really stressed lately because my ex-partner tried contacting my daughter on social media.",
+      ],
+      withheldHistory: [
+        "I actually drink a full 750 mL bottle of wine every night and have done that for years.",
+        "I haven't had an alcohol-free day in years.",
+        "I had many years of domestic, emotional, and sexual abuse from my ex-partner and there is a domestic violence order in place.",
+        "I've gained about 5 kg in the last 2 months and have not been exercising.",
+      ],
+      ice: {
+        ideas: "I think the blood might be from stress and how much I've been drinking.",
+        concerns: "I'm really worried about vomiting blood and about my ex-partner trying to contact my daughter.",
+        expectations: "I want to know what caused this, whether I need tests, and what options I have to cut down alcohol.",
+      },
+      demeanour: "Anxious, stressed, and embarrassed about alcohol use, but open to support when approached non-judgmentally.",
+      responseToJargon: "Prefers plain language and asks for clarification if explanations become too technical.",
+    },
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  // SHARP — Josie, 42F, Tiredness with MS health-anxiety context
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "sharp_tiredness_ms_anxiety",
+    patientName: "Josie Sharp",
+    patientAge: 42,
+    patientGender: "F",
+    presentingComplaint: "Tiredness",
+    topics: ["Fatigue", "Health anxiety", "Women's health", "Primary care investigations"],
+    domain: "mental_health",
+    difficulty: "challenging",
+    icpcCode: "A04 - Weakness/Tiredness",
+    year: "2026 (generated)",
+    scenario: `Josie Sharp, aged 42 years, has come to talk about tiredness.
+
+You have 15 minutes for this case and should treat this consultation as face to face.
+
+Perform the following tasks:
+1. Take a history from the patient.
+2. Explain your differential diagnosis to the patient.
+3. Explain which investigations you would like to order and why those investigations are important.
+4. Address any concerns the patient may have.
+5. Advise the patient of your initial management plan.`,
+    patientRecord: {
+      name: "Josie Sharp",
+      age: 42,
+      gender: "Female",
+      pronouns: "She/Her",
+      sexAssignedAtBirth: "Female",
+      indigenousStatus: "Not stated",
+      allergies: "Codeine",
+      medications: [
+        "Escitalopram 20 mg daily",
+        "Glucosamine + chondroitin supplement, one tablet daily",
+        "Vitamin C (ascorbic acid) 1000 mg daily",
+        "Mirena intrauterine device",
+      ],
+      pastHistory: [
+        "Anxiety and depression (diagnosed 2 years ago)",
+        "Mirena intrauterine device insertion (5 years ago)",
+      ],
+      socialHistory: {
+        "Relationship": "Married; spouse aged 45 and healthy",
+        "Children": "Three daughters aged 19, 16 and 12, all living at home",
+        "Migration": "Migrated from Ireland to Australia 4 years ago",
+        "Occupation": "Clerical assistant in public service",
+      },
+      familyHistory: [
+        "Father (72): COPD diagnosed 5 years ago",
+        "Mother (68): Osteoarthritis",
+        "Sister: Died at age 38 from multiple sclerosis",
+      ],
+      smoking: "Non-smoker",
+      alcohol: "2 standard drinks per week",
+      immunisations: [
+        "dTpa vaccination 5 years ago",
+        "Cervical screening test 2 years ago",
+      ],
+    },
+    questions: [
+      {
+        number: 1,
+        text: "Take a focused fatigue history, including psychosocial context and relevant neurological screening.",
+        timingMinutes: 4,
+        prompts: [
+          { type: "prompt", text: "I've been thinking a lot about my family lately, and it makes me worry." },
+        ],
+      },
+      {
+        number: 2,
+        text: "Explain your differential diagnosis and address Josie's concern about multiple sclerosis.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "prompt", text: "Could this be what my sister had?" },
+        ],
+      },
+      {
+        number: 3,
+        text: "Discuss a rational first-line investigation plan for fatigue in this context.",
+        timingMinutes: 3,
+        prompts: [
+          { type: "probe", text: "Will a blood test actually show if I have MS?" },
+        ],
+      },
+      {
+        number: 4,
+        text: "Provide an initial management plan, including reassurance, follow-up, and safety-netting.",
+        timingMinutes: 4,
+        prompts: [
+          { type: "prompt", text: "What can I do about the tiredness in the meantime?" },
+          { type: "must-use", text: "Give clear return precautions for new neurological symptoms and state your follow-up timeframe." },
+        ],
+      },
+    ],
+    competentCandidateCriteria: [
+      {
+        code: "2.1",
+        title: "History of presenting complaint",
+        questions: [1],
+        points: [
+          "Takes a thorough history of fatigue including psychosocial contributors and mood.",
+          "Assesses sleep, diet, and daily functioning.",
+          "Clarifies current anxiety/depression symptoms and treatment response.",
+        ],
+      },
+      {
+        code: "2.2",
+        title: "Neurological screening and red flags",
+        questions: [1],
+        points: [
+          "Explores family history of multiple sclerosis.",
+          "Screens for focal neurological symptoms such as visual, sensory, and motor deficits.",
+          "Checks for constitutional red flags and serious alternate causes.",
+        ],
+      },
+      {
+        code: "3.1",
+        title: "Differential diagnosis formulation",
+        questions: [2],
+        points: [
+          "Explains a broad and rational differential diagnosis for fatigue.",
+          "Contextualises likely causes including stress, mood, thyroid, iron deficiency, and perimenopause.",
+          "Addresses likelihood of MS based on the current history.",
+        ],
+      },
+      {
+        code: "3.2",
+        title: "Rational investigations",
+        questions: [3],
+        points: [
+          "Selects evidence-based first-line investigations (FBE, iron studies, thyroid function tests, vitamin D).",
+          "Explains rationale for each test in plain language.",
+          "Explains why MRI is not first-line in absence of focal neurological signs.",
+        ],
+      },
+      {
+        code: "1.1",
+        title: "Addressing ideas, concerns, and expectations",
+        questions: [2, 4],
+        points: [
+          "Elicits Josie's fear of multiple sclerosis explicitly.",
+          "Validates emotional distress around her sister's death.",
+          "Provides balanced reassurance without dismissing concerns.",
+        ],
+      },
+      {
+        code: "4.1",
+        title: "Management and safety-netting",
+        questions: [4],
+        points: [
+          "Provides initial fatigue management advice tailored to context.",
+          "Arranges timely review to discuss investigation results.",
+          "Gives explicit safety-net advice for new focal neurological symptoms.",
+        ],
+      },
+    ],
+    markingRubric: [
+      {
+        domain: "Clinical information gathering",
+        domainNumber: 2,
+        code: "2.1",
+        description: "History of presenting complaint",
+        questions: [1],
+        title: "History of Presenting Complaint",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Explores onset, duration, and severity of tiredness.",
+          "Asks about sleep quality, diet, and lifestyle.",
+          "Assesses current mood and efficacy of escitalopram.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to explore the fatigue adequately and misses psychosocial factors.",
+          not_clearly_demonstrated: "Explores fatigue but relies heavily on closed questions with superficial mood assessment.",
+          satisfactorily_demonstrated: "Takes a structured history exploring somatic and psychological aspects of fatigue.",
+          fully_demonstrated: "Provides a comprehensive history integrating biomedical, psychological, and lifestyle domains.",
+        },
+      },
+      {
+        domain: "Clinical information gathering",
+        domainNumber: 2,
+        code: "2.2",
+        description: "Neurological screening and red flags",
+        questions: [1],
+        title: "Neurological Screening and Red Flags",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Identifies family history of multiple sclerosis.",
+          "Screens for focal neurological symptoms (vision, motor, sensory).",
+          "Screens for constitutional red flags such as weight loss or night sweats.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to ask about family history or neurological symptoms.",
+          not_clearly_demonstrated: "Identifies family history but performs inadequate symptom screening.",
+          satisfactorily_demonstrated: "Asks specifically about visual, motor, and sensory symptoms to assess likelihood of MS.",
+          fully_demonstrated: "Systematically rules out neurological pathology and constitutional red flags with precision.",
+        },
+      },
+      {
+        domain: "Diagnosis, decision-making and reasoning",
+        domainNumber: 3,
+        code: "3.1",
+        description: "Formulating differentials",
+        questions: [2],
+        title: "Formulating Differentials",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Explains potential causes of fatigue clearly (for example iron deficiency, thyroid dysfunction, stress, and perimenopause).",
+          "Contextualises differentials to the patient's age, migration history, and comorbidity profile.",
+          "Explicitly addresses likelihood of multiple sclerosis based on available history.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Provides a narrow or inappropriate list of differentials.",
+          not_clearly_demonstrated: "Mentions basic differentials but does not connect them to patient context.",
+          satisfactorily_demonstrated: "Provides a logical differential diagnosis explained in lay language.",
+          fully_demonstrated: "Explains differentials expertly, linking each to the patient's history and concerns.",
+        },
+      },
+      {
+        domain: "Diagnosis, decision-making and reasoning",
+        domainNumber: 3,
+        code: "3.2",
+        description: "Rational investigations",
+        questions: [3],
+        title: "Rational Investigations",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Orders appropriate first-line blood tests (FBE, iron studies, thyroid function tests, vitamin D).",
+          "Explains rationale for each investigation clearly.",
+          "Defers MRI imaging with appropriate clinical reasoning when no focal signs are present.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Orders inappropriate or low-yield investigations without clear justification.",
+          not_clearly_demonstrated: "Orders some investigations but explanation is incomplete or poorly reasoned.",
+          satisfactorily_demonstrated: "Selects appropriate first-line investigations and explains why MRI is deferred.",
+          fully_demonstrated: "Provides a highly evidence-based investigation strategy with clear sequencing and stewardship reasoning.",
+        },
+      },
+      {
+        domain: "Communication and consultation skills",
+        domainNumber: 1,
+        code: "1.1",
+        description: "Addressing patient ICE",
+        questions: [2, 4],
+        title: "Addressing Patient ICE",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Elicits the patient's fear of multiple sclerosis and dying young like her sister.",
+          "Validates emotional distress with empathy.",
+          "Provides reassurance without dismissing concerns.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Ignores emotional cues and dismisses concern about MS.",
+          not_clearly_demonstrated: "Acknowledges concern but reassurance is premature or superficial.",
+          satisfactorily_demonstrated: "Actively listens, validates distress, and provides evidence-based reassurance.",
+          fully_demonstrated: "Demonstrates advanced empathy by integrating grief, anxiety, and uncertainty into a supportive shared plan.",
+        },
+      },
+      {
+        domain: "Clinical management and therapeutic reasoning",
+        domainNumber: 4,
+        code: "4.1",
+        description: "Management and safety-netting",
+        questions: [4],
+        title: "Management and Safety Netting",
+        antiGatingNote: "Q numbers indicate primary windows only. Credit evidence from any question.",
+        behaviouralAnchors: [
+          "Provides practical fatigue-management advice (sleep hygiene, pacing, and stress-management strategies).",
+          "Arranges follow-up to review investigation results.",
+          "Provides explicit safety-netting for new focal neurological symptoms.",
+        ],
+        likertDescriptors: {
+          not_demonstrated: "Fails to provide a clear plan or arrange follow-up.",
+          not_clearly_demonstrated: "Provides a vague plan with incomplete safety-netting.",
+          satisfactorily_demonstrated: "Outlines a clear immediate plan, follow-up, and specific return precautions.",
+          fully_demonstrated: "Co-develops a comprehensive management plan with clear timelines and robust neurological safety-netting.",
+        },
+      },
+    ],
+    debriefNotes: `A competent candidate takes a structured fatigue history, screens for focal neurological features and broader red flags, and proactively explores why multiple sclerosis is a specific fear for Josie. They explain a rational differential diagnosis and investigation approach using plain language, including why first-line blood tests are appropriate and immediate MRI is not indicated in the absence of focal deficits. They validate anxiety linked to her sister's death, provide practical interim management advice, and arrange clear follow-up with explicit neurological safety-netting.`,
+    patientPersona: {
+      openingStatement: "Doctor, I've just been feeling so exhausted lately, I can barely get through the workday.",
+      volunteerHistory: [
+        "I've been feeling constantly tired and it's getting harder to function at work.",
+        "I've also been more stressed lately and worrying about my health.",
+        "My sleep is uninterrupted, but I still wake up unrefreshed.",
+      ],
+      withheldHistory: [
+        "I am terrified this could be multiple sclerosis because my sister died from it at 38.",
+        "I have no visual changes, numbness, weakness, or gait instability.",
+        "My depression has been reasonably controlled on escitalopram.",
+        "I feel safe at home and my husband is supportive.",
+      ],
+      ice: {
+        ideas: "I'm worried this tiredness could be an early sign of multiple sclerosis.",
+        concerns: "I'm terrified I'll develop MS and leave my daughters without a mother.",
+        expectations: "I want clear advice on what this is and whether I need urgent MRI testing.",
+      },
+      demeanour: "Polite but anxious and fatigued, becoming visibly more distressed when discussing family history.",
+      responseToJargon: "Prefers clear plain-language explanations and may seek clarification if terms are too technical.",
     },
   },
 ];

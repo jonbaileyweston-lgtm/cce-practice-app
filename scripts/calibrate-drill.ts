@@ -212,7 +212,9 @@ async function main(): Promise<void> {
     .sort();
 
   if (files.length === 0) {
-    throw new Error(`No JSON files found in ${folderPath}`);
+    console.log(`No JSON fixtures found in ${folderPath}`);
+    console.log("Nothing to calibrate yet. Add fixture JSON files and re-run.");
+    return;
   }
 
   const reports: TranscriptReport[] = [];

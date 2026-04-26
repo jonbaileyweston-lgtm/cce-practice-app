@@ -16,6 +16,19 @@ export interface RubricItem {
   code: string;
   description: string;
   questions: number[]; // which questions this rubric item applies to
+  /** Optional free-text title used by some imported case generators */
+  title?: string;
+  /** Explicit anti-gating instruction shown to evaluators */
+  antiGatingNote?: string;
+  /** Observable behaviours for this rubric criterion */
+  behaviouralAnchors?: string[];
+  /** Optional four-level descriptors for this criterion */
+  likertDescriptors?: {
+    not_demonstrated: string;
+    not_clearly_demonstrated: string;
+    satisfactorily_demonstrated: string;
+    fully_demonstrated: string;
+  };
 }
 
 export interface CompetentCandidateCriteria {

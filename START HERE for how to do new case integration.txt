@@ -1,0 +1,26 @@
+How to integrate new cases.
+
+Get source material.
+If a large PDF - cursor/windsurf wont be able to read it, therefore, you need to put the PDF into an LLM like gemini thinking/pro or claude sonnet/opus to extract the text.
+The instruction there is part 1 of the @RACGP_CCE_Case_Generator.md
+
+Once you have the JSON file from part 1, then give cursor/windsurf the @RACGP_CCE_Case_Generator.md part 2 instruction to convert the JSON file into the format used in the data/cases.ts file.
+
+Explicitly tell it the following:
+
+read and act on @RACGP_CCE_Case_Generator.md for <JSON FILE GETS DROPPED IN FROM EXPLORER INTO THE PROMPT WINDOW>
+
+reminder:  Step 1 — Gemini (or Claude.ai web):
+
+Paste the case generator prompt.
+Attach the PDF(s).
+Get back a response with sections A, B, C, D.
+
+STEP 1 is done - proceed to step 2
+
+Step 2 — YOU!
+
+Copy the JSON from section B.
+Copy the integration prompt from section D (the "Cursor integration prompt").
+Paste both into Cursor — the integration prompt tells Cursor what to do with the JSON.
+Cursor reads your types/index.ts, converts JSON → TypeScript, appends to data/cases.ts, wires it into the prompts.

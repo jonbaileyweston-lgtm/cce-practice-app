@@ -23,6 +23,9 @@ const EXAMINER_PERSONAS: ExaminerPersona[] = [
 const FEMALE_FIRST_NAMES = new Set([
   "angela",
   "susan",
+  "josie",
+  "rebecca",
+  "nicole",
   "ava",
   "amiel",
   "linh",
@@ -33,6 +36,7 @@ const FEMALE_FIRST_NAMES = new Set([
 ]);
 
 const MALE_FIRST_NAMES = new Set([
+  "ben",
   "bill",
   "evan",
   "wei",

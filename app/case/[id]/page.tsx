@@ -44,7 +44,11 @@ export default function CasePrepPage({
     notFound();
   }
 
-  const [practiceMode, setPracticeMode] = useState<PracticeMode>("discussion");
+  const consultOnlyCaseIds = new Set(["groves_pnd_telehealth", "sharp_tiredness_ms_anxiety"]);
+  const isConsultOnlyCase = consultOnlyCaseIds.has(caseData.id);
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>(
+    isConsultOnlyCase ? "consultation" : "discussion"
+  );
   const [readingSecondsLeft, setReadingSecondsLeft] = useState(READING_SECONDS);
   const [readingComplete, setReadingComplete] = useState(false);
   const [skipped, setSkipped] = useState(false);
@@ -71,6 +75,10 @@ export default function CasePrepPage({
 
   const handleStart = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
+    if (isConsultOnlyCase && hasPatientPersona) {
+      router.push(`/case/${id}/consult`);
+      return;
+    }
     const dest =
       practiceMode === "consultation" && hasPatientPersona
         ? `/case/${id}/consult`
@@ -189,20 +197,22 @@ export default function CasePrepPage({
               Practice mode
             </p>
             <div className="flex gap-3 flex-wrap">
-              <button
-                type="button"
-                onClick={() => setPracticeMode("discussion")}
-                className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
-                  practiceMode === "discussion"
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : "bg-white border-slate-200 text-slate-700 hover:border-blue-300"
-                }`}
-              >
-                <div className="font-semibold">Case Discussion</div>
-                <div className={`text-xs mt-0.5 ${practiceMode === "discussion" ? "text-blue-100" : "text-slate-400"}`}>
-                  Examiner Q&A format
-                </div>
-              </button>
+              {!isConsultOnlyCase && (
+                <button
+                  type="button"
+                  onClick={() => setPracticeMode("discussion")}
+                  className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
+                    practiceMode === "discussion"
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-blue-300"
+                  }`}
+                >
+                  <div className="font-semibold">Case Discussion</div>
+                  <div className={`text-xs mt-0.5 ${practiceMode === "discussion" ? "text-blue-100" : "text-slate-400"}`}>
+                    Examiner Q&A format
+                  </div>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => hasPatientPersona && setPracticeMode("consultation")}
