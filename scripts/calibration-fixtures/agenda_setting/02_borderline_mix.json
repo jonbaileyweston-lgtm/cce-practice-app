@@ -1,0 +1,15 @@
+{
+  "transcript": "1. Patient: While we're here, can I ask about my daughter's rash, my migraines, and my husband's scripts?\n2. Candidate: Hi, good to see you - tell me what brought you in.\n3. Patient: All three of those things.\n4. Candidate: Okay, rash, migraines, and scripts. Anything else quickly?\n5. Patient: No.\n6. Candidate: Let's do the rash first, then we can see what else we get through.\n7. Patient: Fine.\n8. Candidate: We're a bit tight for time today, so let's just get through what we can.\n9. Patient: What about the other two?\n10. Candidate: We'll book another appointment for the other concerns and keep an eye on things in the meantime.",
+  "scenario": "Parent presents with child issue plus two unrelated concerns during one appointment.",
+  "my_ratings": {
+    "axis_id": {
+      "opening_engagement": "borderline",
+      "concern_elicitation": "borderline",
+      "prioritisation": "borderline",
+      "time_contracting": "borderline",
+      "follow_up_planning": "borderline"
+    },
+    "hard_fails_triggered": [],
+    "overall": "borderline"
+  }
+}

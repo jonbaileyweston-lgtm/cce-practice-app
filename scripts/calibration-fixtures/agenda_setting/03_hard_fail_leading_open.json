@@ -1,0 +1,15 @@
+{
+  "transcript": "1. Patient: I've had some chest discomfort, and also need a skin check and vaccine advice.\n2. Candidate: You're just here for a skin check, right?\n3. Patient: No, chest discomfort too.\n4. Candidate: Okay, tell me about the skin lesion first.\n5. Patient: I was more worried about the chest.\n6. Candidate: We'll do scripts and skin first because that's easiest. The other issues can wait.\n7. Patient: Can we do chest today?\n8. Candidate: We'll sort everything today somehow.",
+  "scenario": "New patient starts with chest discomfort then mentions preventive concerns.",
+  "my_ratings": {
+    "axis_id": {
+      "opening_engagement": "needs_work",
+      "concern_elicitation": "needs_work",
+      "prioritisation": "needs_work",
+      "time_contracting": "needs_work",
+      "follow_up_planning": "needs_work"
+    },
+    "hard_fails_triggered": ["leading_or_closed_opening_question", "premature_planning_before_agenda_bounded"],
+    "overall": "needs_work"
+  }
+}

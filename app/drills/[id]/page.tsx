@@ -3,9 +3,11 @@
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { buildDrillScenarioPack, getDrillById } from "@/data/drills";
+import { DRILL_RUBRICS } from "@/data/drillRubrics";
 import { notFound } from "next/navigation";
 import { useWhisperSTT } from "@/hooks/useWhisperSTT";
 import { useOpenAITTS } from "@/hooks/useOpenAITTS";
+import type { EvaluationResult } from "@/types/drillRubric";
 
 type DrillMessage = {
   role: "patient" | "candidate";
@@ -19,6 +21,12 @@ type DrillFeedback = {
   topThreeChangesToPass: string[];
   immediateRetryInstruction: string;
 };
+
+type DrillFeedbackResponse = DrillFeedback | EvaluationResult;
+
+function isLegacyDrillFeedback(data: DrillFeedbackResponse): data is DrillFeedback {
+  return "overallRating" in data;
+}
 
 export default function DrillPage({
   params,
@@ -46,7 +54,7 @@ export default function DrillPage({
   const [useManualMode, setUseManualMode] = useState(false);
   const [garbledWarning, setGarbledWarning] = useState<string | null>(null);
   const [isTTSFallback, setIsTTSFallback] = useState(false);
-  const [feedback, setFeedback] = useState<DrillFeedback | null>(null);
+  const [feedback, setFeedback] = useState<DrillFeedbackResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [startMs] = useState<number>(Date.now());
   const [startClockMs, setStartClockMs] = useState<number>(Date.now());
@@ -227,16 +235,37 @@ export default function DrillPage({
       Math.round((Date.now() - Math.max(startMs, startClockMs)) / 1000)
     );
     try {
-      const res = await fetch("/api/drills/evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          drillId: drill.id,
-          messages: overrideMessages ?? messagesRef.current,
-          durationSeconds,
-        }),
-      });
-      const data = (await res.json()) as DrillFeedback | { error: string };
+      const currentMessages = overrideMessages ?? messagesRef.current;
+      const hasRubric = Boolean(DRILL_RUBRICS[drill.id]);
+      const res = await fetch(
+        hasRubric ? "/api/drills/evaluate-v2" : "/api/drills/evaluate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: hasRubric
+            ? JSON.stringify({
+                drill_id: drill.id,
+                transcript: currentMessages
+                  .map(
+                    (m, idx) =>
+                      `${idx + 1}. ${m.role === "candidate" ? "Candidate" : "Patient"}: ${
+                        m.content
+                      }`
+                  )
+                  .join("\n"),
+                scenario_context: [
+                  scenarioPack.stationBrief,
+                  ...(scenarioPack.contextPoints ?? []),
+                ].join("\n"),
+              })
+            : JSON.stringify({
+                drillId: drill.id,
+                messages: currentMessages,
+                durationSeconds,
+              }),
+        }
+      );
+      const data = (await res.json()) as DrillFeedbackResponse | { error: string };
       if (!res.ok || "error" in data) {
         throw new Error("error" in data ? data.error : "Evaluation failed");
       }
@@ -374,7 +403,7 @@ export default function DrillPage({
             {useManualMode ? "Enable mic mode" : "Manual mode"}
           </button>
           <button
-            onClick={evaluateDrill}
+            onClick={() => void evaluateDrill()}
             disabled={
               isSubmitting ||
               isPatientTyping ||
@@ -413,55 +442,144 @@ export default function DrillPage({
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-slate-900">Drill feedback</h2>
-            <span
-              className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                feedback.overallRating === "pass"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-amber-100 text-amber-700"
-              }`}
-            >
-              {feedback.overallRating === "pass" ? "PASS" : "NEEDS WORK"}
-            </span>
+            {isLegacyDrillFeedback(feedback) ? (
+              <span
+                className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                  feedback.overallRating === "pass"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {feedback.overallRating === "pass" ? "PASS" : "NEEDS WORK"}
+              </span>
+            ) : (
+              <span
+                className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                  feedback.overall === "pass"
+                    ? "bg-green-100 text-green-700"
+                    : feedback.overall === "borderline"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {feedback.overall === "pass"
+                  ? "PASS"
+                  : feedback.overall === "borderline"
+                  ? "BORDERLINE"
+                  : "NEEDS WORK"}
+              </span>
+            )}
           </div>
 
-          <div>
-            <h3 className="text-sm font-semibold text-slate-700 mb-2">
-              Top 3 changes to pass
-            </h3>
-            <ul className="space-y-1">
-              {feedback.topThreeChangesToPass.map((c, i) => (
-                <li key={i} className="text-sm text-slate-700">
-                  {i + 1}. {c}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {isLegacyDrillFeedback(feedback) ? (
+            <>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 mb-2">
+                  Top 3 changes to pass
+                </h3>
+                <ul className="space-y-1">
+                  {feedback.topThreeChangesToPass.map((c, i) => (
+                    <li key={i} className="text-sm text-slate-700">
+                      {i + 1}. {c}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-semibold text-green-700 mb-2">Strengths</h3>
-              <ul className="space-y-1">
-                {feedback.strengths.map((s, i) => (
-                  <li key={i} className="text-sm text-slate-700">• {s}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-amber-700 mb-2">Gaps</h3>
-              <ul className="space-y-1">
-                {feedback.gaps.map((g, i) => (
-                  <li key={i} className="text-sm text-slate-700">• {g}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-green-700 mb-2">Strengths</h3>
+                  <ul className="space-y-1">
+                    {feedback.strengths.map((s, i) => (
+                      <li key={i} className="text-sm text-slate-700">• {s}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-amber-700 mb-2">Gaps</h3>
+                  <ul className="space-y-1">
+                    {feedback.gaps.map((g, i) => (
+                      <li key={i} className="text-sm text-slate-700">• {g}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
 
-          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
-            <h3 className="text-sm font-semibold text-indigo-800">Immediate retry instruction</h3>
-            <p className="text-sm text-indigo-700 mt-1">
-              {feedback.immediateRetryInstruction}
-            </p>
-          </div>
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+                <h3 className="text-sm font-semibold text-indigo-800">
+                  Immediate retry instruction
+                </h3>
+                <p className="text-sm text-indigo-700 mt-1">
+                  {feedback.immediateRetryInstruction}
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 mb-2">
+                  Axis judgments
+                </h3>
+                <div className="space-y-3">
+                  {feedback.axis_judgments.map((judgment) => (
+                    <div
+                      key={judgment.axis_id}
+                      className="border border-slate-200 rounded-xl p-3 space-y-2"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-800">{judgment.axis_id}</p>
+                        <span
+                          className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                            judgment.level === "clear_pass"
+                              ? "bg-green-100 text-green-700"
+                              : judgment.level === "borderline"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}
+                        >
+                          {judgment.level.replace("_", " ").toUpperCase()}
+                        </span>
+                      </div>
+                      <blockquote className="text-sm text-slate-700 border-l-2 border-slate-300 pl-3 italic">
+                        "{judgment.evidence_quote}"
+                      </blockquote>
+                      <p className="text-sm text-slate-700">{judgment.evidence_reasoning}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {feedback.hard_fails_triggered.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                  <h3 className="text-sm font-semibold text-red-800 mb-2">
+                    Hard fails triggered
+                  </h3>
+                  <ul className="space-y-1">
+                    {feedback.hard_fails_triggered.map((hardFailId) => (
+                      <li key={hardFailId} className="text-sm text-red-700">
+                        • {hardFailId}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+                <h3 className="text-sm font-semibold text-indigo-800">Pivotal moment</h3>
+                <p className="text-sm text-indigo-700 mt-1">{feedback.pivotal_moment}</p>
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                <h3 className="text-sm font-semibold text-emerald-800">Retry sentence</h3>
+                <p className="text-base text-emerald-800 font-medium mt-1">
+                  {feedback.retry_sentence}
+                </p>
+                <p className="text-xs text-emerald-700 mt-2">
+                  Replaces anchor quote: "{feedback.retry_anchor_quote}"
+                </p>
+              </div>
+            </>
+          )}
         </div>
       )}
     </main>

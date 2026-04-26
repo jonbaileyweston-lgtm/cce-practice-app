@@ -1,0 +1,15 @@
+{
+  "transcript": "1. Patient: Everything's a mess - my stomach, my anxiety, and work is falling apart.\n2. Candidate: Hi Sam, I'm Dr Khan, one of the GPs.\n3. Candidate: Let's start omeprazole today and increase your anxiety medication.\n4. Patient: I haven't even explained everything yet.\n5. Candidate: We'll come back to details after I print scripts.\n6. Patient: I was hoping to talk through what's most urgent.\n7. Candidate: We're short on time, we'll do what we can.",
+  "scenario": "Distressed patient opens with symptom cluster and psychosocial stressors.",
+  "my_ratings": {
+    "axis_id": {
+      "opening_engagement": "needs_work",
+      "concern_elicitation": "needs_work",
+      "prioritisation": "needs_work",
+      "time_contracting": "needs_work",
+      "follow_up_planning": "needs_work"
+    },
+    "hard_fails_triggered": ["premature_planning_before_agenda_bounded"],
+    "overall": "needs_work"
+  }
+}

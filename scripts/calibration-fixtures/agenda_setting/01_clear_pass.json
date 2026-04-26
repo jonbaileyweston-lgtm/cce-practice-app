@@ -1,0 +1,15 @@
+{
+  "transcript": "1. Patient: I've got a few things today - headaches, poor sleep, and my blood pressure tablets.\n2. Candidate: Hi Sam, I'm Dr Lee, one of the GPs - is it okay if we start by listing everything you wanted to cover today?\n3. Patient: Yes, those three mainly.\n4. Candidate: Great. Any other concerns before we choose where to start?\n5. Patient: No, that's all.\n6. Candidate: Thanks. The headaches are the one I'd most like to make sure we cover first, then sleep and blood pressure. Does that sound okay?\n7. Patient: Yes.\n8. Candidate: We've got about 15 minutes, so we can safely cover headaches now and map out next steps for the others.\n9. Patient: Okay.\n10. Candidate: Let's book you back with me next Tuesday for sleep and blood pressure, and if you get severe headache with vision change before then, seek urgent care straight away.",
+  "scenario": "Busy rural GP clinic. Patient presents with multiple non-identical concerns in one visit.",
+  "my_ratings": {
+    "axis_id": {
+      "opening_engagement": "clear_pass",
+      "concern_elicitation": "clear_pass",
+      "prioritisation": "clear_pass",
+      "time_contracting": "clear_pass",
+      "follow_up_planning": "clear_pass"
+    },
+    "hard_fails_triggered": [],
+    "overall": "pass"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "transcript": "1. Patient: Sorry I'm late - quick one: sugars, feet pain, forms, cholesterol, and my sleep tablets.\n2. Candidate: Hi Sam, I'm Dr Lee, one of the GPs.\n3. Candidate: Before we choose where to start, what are all the things you wanted us to cover today?\n4. Patient: Those five.\n5. Candidate: The feet pain is the one I'd most like to make sure we have time for today - is that okay to start with?\n6. Patient: Yes.\n7. Candidate: We've got about 15 minutes, so let's agree what we can safely cover now.\n8. Patient: What about the other things?\n9. Candidate: We'll deal with the rest another time - just book in whenever.",
+  "scenario": "Late-arriving patient lists five concerns; candidate must bound scope and park items safely.",
+  "my_ratings": {
+    "axis_id": {
+      "opening_engagement": "borderline",
+      "concern_elicitation": "borderline",
+      "prioritisation": "borderline",
+      "time_contracting": "clear_pass",
+      "follow_up_planning": "needs_work"
+    },
+    "hard_fails_triggered": [],
+    "overall": "needs_work"
+  }
+}
