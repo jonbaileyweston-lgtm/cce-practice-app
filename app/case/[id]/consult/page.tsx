@@ -42,6 +42,8 @@ export default function ConsultPage({
   const caseData = getCaseById(id);
   const router = useRouter();
 
+  if (!caseData) notFound();
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isConsultStarted, setIsConsultStarted] = useState(false);
@@ -312,7 +314,6 @@ export default function ConsultPage({
     }
   }, [caseData, id, router]);
 
-  if (!caseData) notFound();
   if (!caseData.patientPersona) return null;
 
   return (

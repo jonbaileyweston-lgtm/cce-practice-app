@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
 import { DRILL_RUBRICS } from "@/data/drillRubrics";
+import { getDrillById } from "@/data/drills";
 import type {
   AnchorLevel,
   AxisJudgment,
@@ -29,10 +30,15 @@ const ANCHOR_LEVEL_ORDER: Record<AnchorLevel, number> = {
 };
 
 function extractTextFromClaudeResponse(
-  response: Awaited<ReturnType<typeof anthropic.messages.create>>
+  response: {
+    content: Array<{
+      type: string;
+      text?: string;
+    }>;
+  }
 ): string {
   return response.content
-    .filter((part) => part.type === "text")
+    .filter((part): part is { type: "text"; text: string } => part.type === "text" && typeof part.text === "string")
     .map((part) => part.text)
     .join("\n")
     .trim();
@@ -206,7 +212,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const rubric = DRILL_RUBRICS[drillId];
+    const drill = getDrillById(drillId);
+    if (!drill) {
+      return new Response(JSON.stringify({ error: "Drill not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const rubric = DRILL_RUBRICS[drill.id];
     if (!rubric) {
       return new Response(JSON.stringify({ error: "Drill rubric not found" }), {
         status: 404,
